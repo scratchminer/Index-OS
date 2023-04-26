@@ -1,7 +1,5 @@
-# Index OS
+![Index OS logo](logo.svg)
 ## A custom launcher for the Panic Playdate.
-
-
 
 
 
