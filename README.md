@@ -1,4 +1,4 @@
-![Index OS logo](md-images/logo.svg)
+![Index OS logo](logo.svg)
 ## A custom launcher for the Panic Playdate.
 
 By [scratchminer](https://github.com/scratchminer) and [Rae](https://stuffbyrae.neocities.org/)
