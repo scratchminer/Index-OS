@@ -158,6 +158,8 @@ local setupMenu = function()
 		local sortGameOptions = {
 			"First Title",
 			"Last Title",
+			"First Author",
+			"Last Author",
 			"Newest",
 			"Oldest",
 			"Custom",

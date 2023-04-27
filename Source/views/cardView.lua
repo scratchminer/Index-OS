@@ -477,6 +477,14 @@ function CardView:useGroup(groupStr)
 					return e1.title:upper() > e2:getTitle():upper()
 				end,
 				
+				["First Author"] = function(e1, e2)
+					return e1.author:upper() < e2:getStudio():upper()
+				end,
+				
+				["Last Author"] = function(e1, e2)
+					return e1.author:upper() > e2:getStudio():upper()
+				end,
+				
 				["Newest"] = function(e1, e2)
 					local d1 = playdate.epochFromTime(fle.modtime(e1:getPath())) or 0
 					local d2 = playdate.epochFromTime(fle.modtime(e2:getPath())) or 0
