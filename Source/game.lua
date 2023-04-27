@@ -1081,6 +1081,16 @@ function Game:getTitle()
 	end
 end
 
+function Game:getStudio()
+	if self.state == nil then
+		return "(none)"
+	elseif self.data:getInstalledState() == self.data.kPDGameStateFreshlyInstalled then
+		return "???"
+	else
+		return self.author
+	end
+end
+
 function Game:getPath()
 	return self.path
 end

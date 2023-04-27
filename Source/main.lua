@@ -174,7 +174,7 @@ local setupMenu = function()
 			print("Menu item add error: " .. error)
 		end
 		
-		local result, error = sysMenu:addOptionsMenuItem("sort by", sortGameOptions, prefs.sortGamesBy, function(newValue)
+		local result, error = sysMenu:addOptionsMenuItem("sort", sortGameOptions, prefs.sortGamesBy, function(newValue)
 			prefs.sortGamesBy = newValue
 			savePrefs()
 		end)
