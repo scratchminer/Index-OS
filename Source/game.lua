@@ -28,7 +28,6 @@ kGameStateUnwrapping = 5
 garbageTimer = nil
 
 local frameCounter = 1
-local looping
 
 local launcherCardImg = img.new("images/launcher/launcherCard")
 local launcherPressedImg = img.new("images/launcher/launcherPressed")
@@ -241,7 +240,7 @@ function Game:init(game)
 		self.id = self.data:getBundleID() or "(No bundle ID)"
 		self.path = self.data:getPath()
 		
-		looping = true
+		self.looping = true
 		self:refreshMetadata()
 		
 		if self.extraInfo.launchSoundPath ~= nil then
@@ -386,7 +385,7 @@ function Game:refreshMetadata()
 	self.extraInfo = {}
 		
 	if metadata ~= nil then
-		if metadata.imagePath ~= nil and metadata.imagePath ~= "" then
+		if metadata.imagePath ~= nil and metadata.imagePath ~= "" and fle.isdir(self.path .. "/" .. metadata.imagePath) then
 			self.extraInfo.hasCardImage = true
 			
 			if startsWith(metadata.imagePath, "/") then
@@ -485,7 +484,7 @@ function Game:queueIdle()
 			self.frameIndex = 1
 		end
 		self.loopCount = 0
-		looping = true
+		self.looping = true
 		self.state = kGameStateIdle
 	end
 end
@@ -549,7 +548,7 @@ function Game:getIcon()
 				self.frameIndex = 1
 				
 				if self.extraInfo.iconAnimation.loop ~= 0 and self.loopCount >= self.extraInfo.iconAnimation.loop then
-					looping = false
+					self.looping = false
 					self.frameIndex = #self.extraInfo.iconImage
 					self:enterIcon(self.extraInfo.iconAnimation.frames[self.frameIndex])
 					
@@ -579,7 +578,7 @@ function Game:getIcon()
 				self.frameIndex = 1
 			
 				if self.extraInfo.iconAnimation.loop ~= 0 and self.loopCount >= self.extraInfo.iconAnimation.loop then
-					looping = false
+					self.looping = false
 					self.frameIndex = #self.extraInfo.iconImage
 					self:enterIcon(self.frameIndex)
 					
@@ -759,7 +758,7 @@ function Game:getCardImage(static)
 		return patternWithRibbon, canSwitch
 	else
 		if self.state == kGameStateIdle then
-			if self.extraInfo.animated and looping == true then
+			if self.extraInfo.animated and self.looping == true then
 				if self.extraInfo.cardAnimation.frames ~= nil then
 					if self.halfFrameTimer == nil then
 						self.halfFrameTimer = frt.new(1)
@@ -774,7 +773,7 @@ function Game:getCardImage(static)
 								self.frameIndex = 1
 								
 								if self.extraInfo.cardAnimation.loop ~= 0 and self.loopCount >= self.extraInfo.cardAnimation.loop then
-									looping = false
+									self.looping = false
 									self.frameIndex = #self.extraInfo.cardAnimation.frames
 									self:enterFrame(self.extraInfo.cardAnimation.frames[self.frameIndex])
 									return
@@ -803,7 +802,7 @@ function Game:getCardImage(static)
 								self.frameIndex = 1
 							
 								if self.extraInfo.cardAnimation.loop ~= 0 and self.loopCount >= self.extraInfo.cardAnimation.loop then
-									looping = false
+									self.looping = false
 									self.frameIndex = #self.extraInfo.cardImage
 									self:enterFrame(self.frameIndex)
 									return
@@ -818,7 +817,7 @@ function Game:getCardImage(static)
 					end
 					return self.currentCard, true
 				end
-			elseif self.extraInfo.animated and looping == false then
+			elseif self.extraInfo.animated and self.looping == false then
 				if self.halfFrameTimer ~= nil then
 					self.halfFrameTimer:remove()
 					self.halfFrameTimer = nil
