@@ -522,7 +522,7 @@ function Game:leaveIcon()
 end
 
 function Game:enterIcon(frameNum)
-	local useDefault = self.extraInfo.imagePath == nil or not fle.isdir(self.extraInfo.imagePath)
+	local useDefault = self.extraInfo.imagePath == nil
 	local _, image = loadIcon(self, "icon-highlighted/" .. tostring(frameNum), useDefault)
 	self.currentIcon = image
 end
@@ -1010,7 +1010,7 @@ function Game:leaveFrame()
 end
 
 function Game:enterFrame(frameNum)
-	local useDefault = self.extraInfo.imagePath == nil or not fle.isdir(self.extraInfo.imagePath)
+	local useDefault = self.extraInfo.imagePath == nil
 	local _, image = loadCardImage(self, "card-highlighted/" .. tostring(frameNum), useDefault)
 	self.currentCard = image
 	self.cardSprite:setImage(self.currentCard)
@@ -1021,7 +1021,7 @@ function Game:enterLaunchFrame(frameNum)
 	local image
 	
 	if self.extraInfo.launchImage[frameNum] ~= nil then
-		useDefault = self.extraInfo.imagePath == nil or not fle.isdir(self.extraInfo.imagePath)
+		useDefault = self.extraInfo.imagePath == nil
 		_, image = loadCardImage(self, self.extraInfo.launchImage[frameNum], useDefault)
 	else
 		image = self.cardSprite:getImage()
@@ -1037,7 +1037,7 @@ function Game:loadLaunchImages()
 		return
 	end
 	
-	local useDefault = self.extraInfo.imagePath == nil or not fle.isdir(self.extraInfo.imagePath)
+	local useDefault = self.extraInfo.imagePath == nil
 	self.extraInfo.launchImage = {}
 	
 	local launchAnimated = fle.exists((self.extraInfo.imagePath or self.path) .. "/launchImages")
