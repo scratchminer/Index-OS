@@ -11,7 +11,6 @@ local dis = playdate.display
 local dts = playdate.datastore
 local fle = playdate.file
 local flp = playdate.sound.fileplayer
-local frt = playdate.frameTimer
 local gfx = playdate.graphics
 local img = playdate.graphics.image
 local spr = playdate.graphics.sprite
@@ -528,15 +527,15 @@ function Game:enterIcon(frameNum)
 end
 
 function Game:getIcon()
-	if self.state == nil then
+	if self.state == nil or self.data:getInstalledState() == self.data.kPDGameStateFreshlyInstalled then
 		return nil
 	end
 	if self.extraInfo.iconAnimation == nil then
 		return self.extraInfo.iconStill
 	end
 	
-	if self.extraInfo.iconAnimation.frames ~= nil and self.halfFrameTimer == nil then
-		self.halfFrameTimer = frt.new(1)
+	if self.looping and self.extraInfo.iconAnimation.frames ~= nil and self.halfFrameTimer == nil then
+		self.halfFrameTimer = tmr.new(25)
 		self.halfFrameTimer.timerEndedCallback = function()
 			self:leaveIcon()
 			
@@ -565,8 +564,8 @@ function Game:getIcon()
 		
 		self.halfFrameTimer.discardOnCompletion = false
 		self.halfFrameTimer.repeats = true
-	elseif self.halfFrameTimer == nil then
-		self.halfFrameTimer = frt.new(1)
+	elseif self.looping and self.halfFrameTimer == nil then
+		self.halfFrameTimer = tmr.new(25)
 		self.halfFrameTimer.timerEndedCallback = function()
 			self:leaveIcon()
 			
@@ -761,7 +760,7 @@ function Game:getCardImage(static)
 			if self.extraInfo.animated and self.looping == true then
 				if self.extraInfo.cardAnimation.frames ~= nil then
 					if self.halfFrameTimer == nil then
-						self.halfFrameTimer = frt.new(1)
+						self.halfFrameTimer = tmr.new(25)
 						self.halfFrameTimer.timerEndedCallback = function()
 							self:leaveFrame()
 							
@@ -789,7 +788,7 @@ function Game:getCardImage(static)
 					return self.currentCard, true
 				else
 					if self.halfFrameTimer == nil then
-						self.halfFrameTimer = frt.new(1)
+						self.halfFrameTimer = tmr.new(25)
 						self.halfFrameTimer.timerEndedCallback = function()
 							self:leaveFrame()
 							
@@ -858,7 +857,7 @@ function Game:getCardImage(static)
 			if #self.extraInfo.launchImage > 1 then
 				if self.halfFrameTimer == nil then
 					sys.setLaunchAnimationActive(true)
-					self.halfFrameTimer = frt.new(1)
+					self.halfFrameTimer = tmr.new(25)
 					self.halfFrameTimer.timerEndedCallback = function()
 						if not self.loaded then
 							return

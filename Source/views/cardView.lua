@@ -14,7 +14,6 @@ import("views/secretView")
 local anm = playdate.graphics.animator
 local dts = playdate.datastore
 local fle = playdate.file
-local frt = playdate.frameTimer
 local geo = playdate.geometry
 local gfx = playdate.graphics
 local spr = playdate.graphics.sprite
@@ -1837,7 +1836,6 @@ function CardView:draw(shake)
 	end
 	
 	tmr.updateTimers()
-	frt.updateTimers()
 	
 	local barYOffset = nil
 	
