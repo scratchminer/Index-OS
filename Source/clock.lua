@@ -1,5 +1,5 @@
 -- This file was cleaned up and modified from the decompiled Panic launcher.
--- The original file was presumably written by Dan Messing sometime in 2020.
+-- The original file was presumably written by Dan Messing sometime in 2019 or 2020.
 
 import("CoreLibs/graphics")
 
