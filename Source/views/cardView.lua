@@ -529,7 +529,7 @@ function CardView:activate(swipeInFrom, currentGame)
 		end
 	elseif swipeInFrom == "right" then
 		offXAnim = tmr.new(80, 400, 0, playdate.easingFunctions.outCubic)
-	elseif swipeInFrom == "left" then
+	elseif swipeInFrom == "left" then	
 		offXAnim = tmr.new(80, -400, 0, playdate.easingFunctions.outCubic)
 	end
 	
@@ -1109,6 +1109,9 @@ function CardView.AButtonUp()
 			end
 			
 			topBarSprite:removeAnimator()
+			for _, game in ipairs(gameList) do
+				game:queueIdle()
+			end
 		end)
 		
 		onNextFrame = true
@@ -1290,6 +1293,9 @@ function CardView.AButtonUp()
 				
 				if gameList[selectedIndex].state ~= nil then
 					loadAll(true)
+					for _, game in ipairs(gameList) do
+						game:queueIdle()
+					end
 				end
 			end)
 			
@@ -1318,6 +1324,9 @@ function CardView.AButtonUp()
 			
 			if gameList[selectedIndex].state ~= nil then
 				loadAll(false)
+				for _, game in ipairs(gameList) do
+					game:queueIdle()
+				end
 			end
 			
 			listViewTimer = tmr.new(300, function()
@@ -1334,7 +1343,9 @@ function CardView.AButtonUp()
 				end
 				
 				topBarSprite:removeAnimator()
-				gameList[selectedIndex]:queueIdle()
+				for _, game in ipairs(gameList) do
+					game:queueIdle()
+				end
 			end)
 			
 			cooldown = true

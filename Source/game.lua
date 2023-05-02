@@ -97,7 +97,7 @@ local parseAnimFile = function(animFile)
 			elseif "introframes" == key then
 				introFrames = {}
 				addFramesToTable(introFrames, value)
-			elseif "self.loopCount" == key then
+			elseif "loopcount" == key then
 				local count = tonumber(value)
 				if count ~= nil and count > 0 then
 					info.loop = count
@@ -774,7 +774,11 @@ function Game:getCardImage(static)
 								if self.extraInfo.cardAnimation.loop ~= 0 and self.loopCount >= self.extraInfo.cardAnimation.loop then
 									self.looping = false
 									self.frameIndex = #self.extraInfo.cardAnimation.frames
-									self:enterFrame(self.extraInfo.cardAnimation.frames[self.frameIndex])
+									
+									if self.halfFrameTimer ~= nil then
+										self.halfFrameTimer:remove()
+										self.halfFrameTimer = nil
+									end
 									return
 								end
 							end
@@ -803,7 +807,11 @@ function Game:getCardImage(static)
 								if self.extraInfo.cardAnimation.loop ~= 0 and self.loopCount >= self.extraInfo.cardAnimation.loop then
 									self.looping = false
 									self.frameIndex = #self.extraInfo.cardImage
-									self:enterFrame(self.frameIndex)
+									
+									if self.halfFrameTimer ~= nil then
+										self.halfFrameTimer:remove()
+										self.halfFrameTimer = nil
+									end
 									return
 								end
 							end
@@ -816,20 +824,6 @@ function Game:getCardImage(static)
 					end
 					return self.currentCard, true
 				end
-			elseif self.extraInfo.animated and self.looping == false then
-				if self.halfFrameTimer ~= nil then
-					self.halfFrameTimer:remove()
-					self.halfFrameTimer = nil
-					
-					if self.extraInfo.cardAnimation.frames ~= nil then
-						self:leaveFrame()
-						self:enterFrame(self.extraInfo.cardAnimation.frames[#self.extraInfo.cardAnimation.frames])
-					else
-						self:leaveFrame()
-						self:enterFrame(#self.extraInfo.cardImage)
-					end
-				end
-				return self.currentCard, true
 			elseif not self.extraInfo.animated then
 				self.cardSprite:setImage(self.extraInfo.cardImage)
 				return self.extraInfo.cardImage, true
