@@ -1873,6 +1873,10 @@ function CardView:draw(shake)
 		barYOffset = -84
 	end
 	
+	if not inListView and not inInfoView and barAnim == nil then
+		barYOffset = 0
+	end
+	
 	if not inListView and deleteFolderAnim ~= nil then
 		local val = deleteFolderAnim.currentTime // 500
 		local angle = math.rad(deleteFolderAnim.currentTime) * 1.5

@@ -324,7 +324,7 @@ function setView(nextView, fromRight)
 				currentViewIndex = index
 				
 				if currentView.activate ~= nil then
-					currentView:activate("right-", "")
+					currentView:activate("right", "")
 				end
 			else
 				cooldown = true
@@ -458,10 +458,6 @@ end
 if sys == nil then
 	currentView = ErrorView()
 else
-	if sys.getPreviousApp() ~= nil then
-		playdate.reboot()
-	end
-	
 	sys.setLaunchAnimationActive(false)
 	dis.setRefreshRate(40)
 	
