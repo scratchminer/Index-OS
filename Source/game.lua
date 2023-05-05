@@ -324,9 +324,10 @@ function Game:init(game)
 		
 		local _, icon = loadIcon(self, "icon", useDefault)
 		self.extraInfo.iconStill = icon
-		self.extraInfo.iconImage = {}
 		
 		if fle.exists((self.extraInfo.imagePath or self.path) .. "/icon-highlighted/") then
+			self.extraInfo.iconImage = {}
+			
 			if self.extraInfo.iconAnimation == nil then
 				local animImage = self.extraInfo.imagePath or self.path
 				if endsWith(animImage, "/") then
@@ -373,16 +374,15 @@ function Game:init(game)
 				
 				self:enterIcon(self.extraInfo.iconAnimation.frames[1])
 			end
+		elseif fle.exists("images/icons/season1/" .. self.id .. ".pdi") then
+			self.extraInfo.iconStill = img.new("images/icons/season1/" .. self.id)
+			self.extraInfo.iconImage = self.extraInfo.iconStill
 		else
 			self.extraInfo.iconImage = self.extraInfo.iconStill
 		end
 		
 		self.frameIndex = 0
 		self.loopCount = 0
-		
-		if fle.exists("images/icons/season1/" .. self.id .. ".pdi") then
-			self.extraInfo.iconStill = img.new("images/icons/season1/" .. self.id)
-		end
 	else
 		self.extraInfo.cardStill = emptyFolderImg
 		self.extraInfo.iconStill = emptyFolderIconImg
