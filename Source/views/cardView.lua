@@ -1871,7 +1871,7 @@ function CardView:draw(shake)
 		barYOffset = -84
 	end
 	
-	if not inListView and not inInfoView and barAnim == nil then
+	if not inListView and not inInfoView and barAnim == nil and gameList[selectedIndex].state ~= kGameStateLaunching then
 		barYOffset = 0
 	end
 	
