@@ -99,6 +99,9 @@ local refreshViewList = function(firstCall)
 	if firstCall then
 		selectedGame = sys.getLastGameDownloadPath() or launcherPrefs.selectedGamePath or "/System/Settings.pdx"
 		loadGameGroups()
+		
+		folderPrefs.gamePlayedTimes = folderPrefs.gamePlayedTimes or {}
+		folderPrefs.gamePlayedTimes[selectedGame] = playdate.getSecondsSinceEpoch()
 	else
 		local game = playdate.getCurrentGame()
 		if game ~= nil then
@@ -160,8 +163,8 @@ local setupMenu = function()
 			"Last Title",
 			"First Author",
 			"Last Author",
-			"Newest",
-			"Oldest",
+			"Most Recent",
+			"Least Recent",
 			"Custom",
 		}
 		
@@ -472,7 +475,7 @@ else
 		prefs.showBatteryPercentage = false
 	end
 	
-	prefs.showBatteryBelowThreshold = prefs.showBatteryBelowThreshold or 10
+	prefs.showBatteryBelowThreshold = prefs.showBatteryBelowThreshold or 25
 	
 	local validSorts = {
 		"Default",
@@ -485,8 +488,10 @@ else
 	local validGameSorts = {
 		"First Title",
 		"Last Title",
-		"Newest",
-		"Oldest",
+		"First Author",
+		"Last Author",
+		"Most Recent",
+		"Least Recent",
 		"Custom",
 	}
 	

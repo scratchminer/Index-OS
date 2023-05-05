@@ -484,16 +484,16 @@ function CardView:useGroup(groupStr)
 					return e1.author:upper() > e2:getStudio():upper()
 				end,
 				
-				["Newest"] = function(e1, e2)
-					local d1 = playdate.epochFromTime(fle.modtime(e1:getPath())) or 0
-					local d2 = playdate.epochFromTime(fle.modtime(e2:getPath())) or 0
+				["Most Recent"] = function(e1, e2)
+					local d1 = folderPrefs.gamePlayedTimes[e1:getPath()] or 0
+					local d2 = folderPrefs.gamePlayedTimes[e2:getPath()] or 0
 					
 					return d1 > d2
 				end,
 				
-				["Oldest"] = function(e1, e2)
-					local d1 = playdate.epochFromTime(fle.modtime(e1:getPath())) or 0
-					local d2 = playdate.epochFromTime(fle.modtime(e2:getPath())) or 0
+				["Least Recent"] = function(e1, e2)
+					local d1 = folderPrefs.gamePlayedTimes[e1:getPath()] or 0
+					local d2 = folderPrefs.gamePlayedTimes[e2:getPath()] or 0
 					
 					return d1 < d2
 				end,
