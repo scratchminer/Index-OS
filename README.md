@@ -8,7 +8,7 @@ Use the Playdate Compiler from Playdate's SDK: `pdc -v Source IndexOS.pdx`
 
 ### Installing
 #### On hardware
-1. Download the Index Installer from the website or releases page (todo: actually post it)
+1. Download the Index Installer from the website or releases page.
 2. Sideload the PDX to your device, or place it directly in the data disk somewhere in the `Games` folder.
 3. On your Playdate, launch the installer and follow the on-screen prompts.
 
