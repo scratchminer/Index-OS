@@ -12,6 +12,6 @@ function FolderView:init(folderName)
 end
 
 function FolderView:activate(fromLeft, currentGame)
-	self:useGroup(self.folderName)
+	self:useGroup(self.folderName, currentGame)
 	FolderView.super.activate(self, fromLeft, currentGame)
 end

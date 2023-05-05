@@ -17,7 +17,6 @@ local gameFolders
 local asyncGameLoader
 
 local loadingGroup
-local loadingGroupData
 
 local getViewArg = function(groupName)
 	if groupName == nil then
@@ -40,11 +39,15 @@ local getViewArg = function(groupName)
 end
 
 local loadGroupAsync = function(index)
+	-- go through each group twice, in case we miss a game
 	for j, game in ipairs(gameGroups[index]) do
 		if type(game) == "userdata" then
 			coroutine.yield(j, Game(game))
-		elseif type(game) == "table" then
-			coroutine.yield(j, game)
+		end
+	end
+	for j, game in ipairs(gameGroups[index]) do
+		if type(game) == "userdata" then
+			coroutine.yield(j, Game(game))
 		end
 	end
 end
@@ -57,21 +60,13 @@ function loadNextGame()
 			if loadingGroup == nil then
 				return
 			end
-			
-			loadingGroupData = table.shallowcopy(gameGroups[loadingGroup])
 		end
 		
-		local _, index, game
 		if loadingGroup ~= nil then
-			_, index, game = coroutine.resume(asyncGameLoader, loadingGroup)
+			local _, index, game = coroutine.resume(asyncGameLoader, loadingGroup)
 			if index ~= nil then
-				loadingGroupData[index] = game
+				gameGroups[loadingGroup][index] = game
 			end
-		end
-		
-		if game == nil then
-			gameGroups[loadingGroup] = loadingGroupData
-			loadingGroupData = nil
 		end
 	end
 end
@@ -81,18 +76,18 @@ function loadGameGroups()
 	reloadGameGroups()
 end
 
-function loadGroupFaster(group)
-	ret = {}
-	
-	for i, game in ipairs(group) do
-		if type(game) == "userdata" then
-			ret[i] = Game(game)
-		else
-			ret[i] = game
+function loadGroupFaster(groupIndex, index)
+	for i = index - 3, index + 3 do
+		if i >= 1 and i <= #gameGroups[groupIndex] then
+			local game = gameGroups[groupIndex][i]
+			
+			if type(game) == "userdata" then
+				gameGroups[groupIndex][i] = Game(game)
+			end
 		end
 	end
 	
-	return ret
+	return gameGroups[groupIndex]
 end
 
 function groupExists(groupName)

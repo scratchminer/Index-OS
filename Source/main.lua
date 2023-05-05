@@ -151,7 +151,10 @@ local pushView = function(nextView)
 end
 
 local savePrefs = function()
-	setView(0)
+	if currentView.activate ~= nil then
+		setView(0)
+	end
+		
 	dts.write(prefs, "/Data/Index OS/prefs", true)
 end
 
@@ -206,11 +209,6 @@ function setView(nextView, fromRight)
 			refreshViewList(false)
 			
 			currentView:deinit()
-			
-			local group, index = getGroupByName(currentView.folderName, gameGroups)
-			
-			currentView = findViewForGroup(group)
-			currentViewIndex = index
 			
 			if currentView.activate ~= nil then
 				currentView:activate(false, "")

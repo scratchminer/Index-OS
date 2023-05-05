@@ -12,6 +12,6 @@ function MyGamesView:init()
 end
 
 function MyGamesView:activate(fromLeft, currentGame)
-	self:useGroup("Sideloaded")
+	self:useGroup("Sideloaded", currentGame)
 	MyGamesView.super.activate(self, fromLeft, currentGame)
 end

@@ -183,7 +183,7 @@ local loadAll = function(dontReload)
 			end
 		else
 			offY = offY or (selectedIndex - 1) * 200
-			local lower = math.floor(offY / 200) + 1
+			local lower = math.floor(offY / 200) - 1
 			local upper = math.ceil(offY / 200) + 1
 			
 			for i = 1, lower - 1 do
@@ -233,9 +233,9 @@ local loadAll = function(dontReload)
 	if not dontReload then
 		if gameMove == nil or gameMove.index == nil then
 			local lower = math.floor(offY / 200) - 1
-			local upper = math.ceil(offY / 200) - 1
+			local upper = math.ceil(offY / 200) + 1
 			
-			for i = lower - 2, upper + 2 do
+			for i = lower - 1, upper + 1 do
 				if gameList[i] ~= nil and not gameList[i].loaded then
 					gameList[i]:loadCardImages()
 					gameList[i].cardSprite:moveBy(0, (i - 1) * 200)
@@ -442,77 +442,92 @@ function CardView:init()
 	end
 end
 
-function CardView:useGroup(groupStr)
-	local games = {}
-	
-	if type(groupStr) == "string" then
-		self.groupName = groupStr
-		local group, idx = getGroupByName(self.groupName, gameGroups)
-		local loadFaster = false
-		
-		for i, game in ipairs(group) do
-			if type(game) == "userdata" then
-				loadFaster = true
-			else
-				games[i] = game
-			end
-		end
-		
-		if loadFaster then
-			games = loadGroupFaster(group)
-		end
-		
-		if #games == 0 then
-			table.insert(games, Game())
-		end
-		
-		if self.groupName ~= "System" then
-			local sortFuncs = {
-				["First Title"] = function(e1, e2)
-					return e1.title:upper() < e2:getTitle():upper()
-				end,
-				
-				["Last Title"] = function(e1, e2)
-					return e1.title:upper() > e2:getTitle():upper()
-				end,
-				
-				["First Author"] = function(e1, e2)
-					return e1.author:upper() < e2:getStudio():upper()
-				end,
-				
-				["Last Author"] = function(e1, e2)
-					return e1.author:upper() > e2:getStudio():upper()
-				end,
-				
-				["Most Recent"] = function(e1, e2)
-					local d1 = folderPrefs.gamePlayedTimes[e1:getPath()] or 0
-					local d2 = folderPrefs.gamePlayedTimes[e2:getPath()] or 0
-					
-					return d1 > d2
-				end,
-				
-				["Least Recent"] = function(e1, e2)
-					local d1 = folderPrefs.gamePlayedTimes[e1:getPath()] or 0
-					local d2 = folderPrefs.gamePlayedTimes[e2:getPath()] or 0
-					
-					return d1 < d2
-				end,
-			}
-			
-			if prefs.sortGamesBy ~= "Custom" then
-				table.sort(games, sortFuncs[prefs.sortGamesBy])
-			end
-		end
-	end
-	
-	self.gameList = games
-end
-
-function CardView:activate(swipeInFrom, currentGame)
+function CardView:useGroup(groupStr, currentGame)
 	if gameList ~= nil then
 		loadAll(true)
 	end
 	
+	self.groupName = groupStr
+	local group, idx = getGroupByName(self.groupName)
+	local loadFaster = false
+	
+	if self.groupName ~= "System" then
+		local sortFuncs = {
+			["First Title"] = function(e1, e2)
+				return e1 ~= nil and e2 ~= nil and e1:getTitle():upper() < e2:getTitle():upper()
+			end,
+			
+			["Last Title"] = function(e1, e2)
+				return e1 ~= nil and e2 ~= nil and e1:getTitle():upper() > e2:getTitle():upper()
+			end,
+			
+			["First Author"] = function(e1, e2)
+				return e1 ~= nil and e2 ~= nil and e1:getStudio():upper() < e2:getStudio():upper()
+			end,
+			
+			["Last Author"] = function(e1, e2)
+				return e1 ~= nil and e2 ~= nil and e1:getStudio():upper() > e2:getStudio():upper()
+			end,
+			
+			["Most Recent"] = function(e1, e2)
+				if e1 == nil or e2 == nil then
+					return false
+				end
+				
+				local d1 = folderPrefs.gamePlayedTimes[e1:getPath()] or 0
+				local d2 = folderPrefs.gamePlayedTimes[e2:getPath()] or 0
+				
+				return d1 > d2
+			end,
+			
+			["Least Recent"] = function(e1, e2)
+				if e1 == nil or e2 == nil then
+					return false
+				end
+				
+				local d1 = folderPrefs.gamePlayedTimes[e1:getPath()] or 0
+				local d2 = folderPrefs.gamePlayedTimes[e2:getPath()] or 0
+				
+				return d1 < d2
+			end,
+		}
+		
+		if prefs.sortGamesBy ~= "Custom" then
+			table.sort(group, sortFuncs[prefs.sortGamesBy])
+		end
+	end
+	
+	for i, game in ipairs(group) do
+		if type(game) == "userdata" then
+			loadFaster = true
+			break
+		end
+	end
+	
+	for index, game in ipairs(group) do
+		if game:getPath() == currentGame then
+			selectedIndex = index
+			break
+		end
+	end
+	
+	if selectedIndex == nil then
+		selectedIndex = 1
+	end
+	selectedIndex = selectedIndex <= #group and selectedIndex or #group
+	
+	if loadFaster then
+		group = loadGroupFaster(idx, selectedIndex)
+	end
+	
+	if #group == 0 then
+		table.insert(group, Game())
+	end
+	
+	self.gameList = group
+end
+
+function CardView:activate(swipeInFrom, currentGame)
 	gameList = self.gameList
 	folderName = self.groupName
 	displayName = self.displayName
@@ -532,18 +547,6 @@ function CardView:activate(swipeInFrom, currentGame)
 	elseif swipeInFrom == "left" then	
 		offXAnim = tmr.new(80, -400, 0, playdate.easingFunctions.outCubic)
 	end
-	
-	for index, game in ipairs(gameList) do
-		if game.path == currentGame then
-			selectedIndex = index
-			break
-		end
-	end
-	
-	if selectedIndex == nil then
-		selectedIndex = 1
-	end
-	selectedIndex = selectedIndex <= #gameList and selectedIndex or #gameList
 	
 	if gameList[selectedIndex].state ~= nil then
 		gameList[selectedIndex]:queueIdle()
@@ -1689,6 +1692,9 @@ function CardView:draw(shake)
 			end
 		end
 	end
+	
+	for _, item in ipairs(gameList) do print(item) end
+	print()
 	
 	local newBatteryIndex = getBatteryIndex()
 	if batteryTable ~= nil and batteryIndex ~= newBatteryIndex then

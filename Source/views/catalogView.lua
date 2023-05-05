@@ -12,6 +12,6 @@ function CatalogView.init(self)
 end
 
 function CatalogView:activate(fromLeft, currentGame)
-	self:useGroup("Catalog")
+	self:useGroup("Catalog", currentGame)
 	CatalogView.super.activate(self, fromLeft, currentGame)
 end

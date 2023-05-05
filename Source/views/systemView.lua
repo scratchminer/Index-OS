@@ -12,6 +12,6 @@ function SystemView:init()
 end
 
 function SystemView:activate(fromLeft, currentGame)
-	self:useGroup("System")
+	self:useGroup("System", currentGame)
 	SystemView.super.activate(self, fromLeft, currentGame)
 end

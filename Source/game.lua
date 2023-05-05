@@ -263,9 +263,13 @@ function Game:init(game)
 			return
 		end
 		
-		local useDefault = self.extraInfo.imagePath == nil
+		local useDefault = self.extraInfo.imagePath == nil or not fle.isdir(self.extraInfo.imagePath)
 		
 		if self.extraInfo.cardStill == nil then
+			if self.extraInfo.imagePath ~= nil then
+				
+			end
+			
 			local _, image = loadCardImage(self, "card", useDefault)
 			self.extraInfo.cardStill = image
 		end
