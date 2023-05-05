@@ -1693,9 +1693,6 @@ function CardView:draw(shake)
 		end
 	end
 	
-	for _, item in ipairs(gameList) do print(item) end
-	print()
-	
 	local newBatteryIndex = getBatteryIndex()
 	if batteryTable ~= nil and batteryIndex ~= newBatteryIndex then
 		batteryIndex = newBatteryIndex
