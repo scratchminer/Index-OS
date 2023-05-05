@@ -4,7 +4,7 @@
 By [scratchminer](https://github.com/scratchminer) and [Rae](https://stuffbyrae.neocities.org/)
 
 ### Building from source
-Use the Playdate Compiler from Playdate's SDK: `pdc -v Source IndexOS.pdx`
+Use the Playdate Compiler from Playdate's SDK: `pdc Source IndexOS.pdx`
 
 ### Installing
 #### On hardware
