@@ -64,6 +64,8 @@ end
 local setKeyboardPos = function(change)	
 	local currentPos
 	
+	textChanged = true
+	
 	if currentRow == kRowSymbols then
 		symbolPos = symbolPos + change
 		currentPos = symbolPos
@@ -352,6 +354,8 @@ function NewFolderView:renderKeyboard()
 		textChanged = true
 	elseif anim ~= nil and anim:ended() == false then
 		textChanged = true
+	elseif widthAnim ~= nil and widthAnim:ended() == false then
+		textChanged = true
 	end
 	
 	if textChanged == true then
@@ -417,6 +421,8 @@ function NewFolderView:renderKeyboard()
 			gfx.setColor(gfx.kColorBlack)
 			gfx.drawRoundRect(xCoord + shakeBackForth, yCoord + jitter, width, 36, 3)
 		end
+		
+		textChanged = false
 	end
 end
 
