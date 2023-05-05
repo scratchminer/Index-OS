@@ -1040,14 +1040,14 @@ function CardView.BButtonUp()
 end
 
 function CardView.AButtonUp()
-	if inInfoView and playdate.buttonIsPressed("B") then
+	if inInfoView and playdate.buttonIsPressed("B") and infoViewTimer == nil then
 		inInfoView = false
 		infoViewAnim = anm.new(300, geo.point.new(200, bottomBarSprite.y), geo.point.new(200, 240), playdate.easingFunctions.outBack)
 		infoViewSprite:setAnimator(infoViewAnim)
 		bottomBarSprite:setAnimator(infoViewAnim)
 		
-		topBarSprite:removeAnimator()
 		barAnim = tmr.new(300, -84, 0)
+		
 		batterySprite:add()
 		
 		infoViewTimer = tmr.new(300, function()
@@ -1060,6 +1060,99 @@ function CardView.AButtonUp()
 				infoViewTimer:remove()
 				infoViewTimer = nil
 			end
+			
+			if launchAnim ~= nil then
+				launchAnim = nil
+				if gameList[selectedIndex].id ~= nil then
+					delaunchAnim = anm.new(100, lastLaunchAnimVal, 0)
+					gameList[selectedIndex]:queueIdle()
+				end
+			end
+			batterySprite:setAnimator(anm.new(300, geo.point.new(384, 20 + topBarSprite.y), geo.point.new(384, 220), playdate.easingFunctions.outBack))
+			listViewAnim = anm.new(300, geo.point.new(200, topBarSprite.y), geo.point.new(200, 200), playdate.easingFunctions.outBack)
+			listViewSprite = spr.new(listViewCard)
+			listViewSprite:setCenter(0.5, 1)
+			listViewSprite:setZIndex(1998)
+			listViewSprite:setIgnoresDrawOffset(true)
+			listViewSprite:setAnimator(listViewAnim)
+			listViewSprite:add()
+			
+			local anchorStart, anchorEnd = (selectedIndex - 3 < 1), (selectedIndex + 3 > #gameList)
+			if anchorStart or #gameList <= 5 then
+				listViewY = selectedIndex * 36 - 32
+				listViewTextOffset = 0
+			elseif anchorEnd and #gameList > 5 then
+				listViewY = 76 + (selectedIndex + 2 - #gameList) * 36 
+				listViewTextOffset = (5 - #gameList) * 36
+			else
+				listViewY = 76
+				listViewTextOffset = (3 - selectedIndex) * 36
+			end
+			
+			listViewTextSprite = spr.new()
+			listViewTextSprite:setCenter(0.5, 0)
+			listViewTextSprite:setZIndex(1999)
+			listViewTextSprite:setIgnoresDrawOffset(true)
+			
+			function listViewTextSprite:update()
+				if listViewAnim ~= nil then
+					self:setClipRect(28, 0, 380, listViewAnim:currentValue().y)
+				end
+				
+				if self.refresh == true or (offXAnim ~= nil and self.refresh == true) then
+					local image = img.new(392, math.max(38 * #gameList + 8, 190))
+					gfx.pushContext(image)
+					
+					local yPos = 14
+					for i = 1, #gameList do
+						local text = gameList[i]:getTitle():gsub("*", "**"):gsub("_", "__")
+						gfx.drawTextInRect("*" .. text .. "*", 24, yPos, 300, 24, nil, "...", kTextAlignment.left)
+						yPos = yPos + 36
+					end
+					
+					gfx.popContext()
+					self:setImage(image)
+					
+					if listViewTextAnim ~= nil then
+						self:setAnimator(listViewTextAnim)
+					end
+					
+					self.refresh = false
+				end
+			end
+			
+			listViewTextAnim = anm.new(300, geo.point.new(200, listViewTextOffset - 200), geo.point.new(200, topBarSprite.y + listViewTextOffset), playdate.easingFunctions.outBack)
+			listViewTextSprite:setAnimator(listViewTextAnim)
+			listViewTextSprite:add()
+			listViewTextSprite.refresh = true
+			
+			barAnim = tmr.new(300, barAnim and barAnim.value or 0, -84)
+			inListView = true
+			
+			if not listOpenSound:isPlaying() then
+				listOpenSound:play()
+			end
+			
+			for _, game in ipairs(gameList) do
+				game:queueIdle()
+			end
+			
+			listViewTimer = tmr.new(300, function()
+				allowMoving = true
+				if listViewTimer ~= nil then
+					listViewTimer:remove()
+					listViewTimer = nil
+				end
+				
+				topBarSprite:removeAnimator()
+				
+				if gameList[selectedIndex].state ~= nil then
+					loadAll(true)
+				end
+			end)
+			
+			allowVerticalMove = true
+			cooldown = true
 		end)
 		
 		if not infoCloseSound:isPlaying() then
@@ -1067,14 +1160,9 @@ function CardView.AButtonUp()
 		end
 		
 		allowVerticalMove = true
+		onNextFrame = true
 		
 		bottomBarSprite:setImageWithUpdate(barRegularImage)
-		
-		tmr.performAfterDelay(300, function()
-			secretComboIndex = #secretCombo
-			CardView.AButtonUp()
-			secretComboIndex = 1
-		end)
 		
 		loadAll(false)
 		return
