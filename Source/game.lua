@@ -34,6 +34,8 @@ local blackImg = img.new(400, 240, gfx.kColorBlack)
 local emptyFolderImg = img.new("images/groupEmpty")
 local emptyFolderIconImg = img.new("images/groupEmptyIcon")
 
+local seasonIcons = fle.listFiles("images/icons/season1")
+
 local launchImage
 local newLaunchImage
 
@@ -41,6 +43,13 @@ local underlayVideo, underlayMaskVideo
 local fadeOutVideo, fadeOutMaskVideo
 local unwrapVideo, unwrapMaskVideo, unwrapLowerMaskVideo
 local unwrapSound = flp.new("sounds/unwrap")
+
+local wrappedIcons = {
+	img.new("images/icons/wrapped/1"),
+	img.new("images/icons/wrapped/2"),
+	img.new("images/icons/wrapped/3"),
+	img.new("images/icons/wrapped/4")
+}
 
 local ribbonImg = img.new("images/wrapped")
 local patternMaskImg = img.new("images/wrappedMask")
@@ -246,9 +255,7 @@ function Game:init(game)
 			self.launchSound = flp.new(self.extraInfo.launchSoundPath) or defaultLaunchSound
 		end
 		
-		if self.data:getInstalledState() == self.data.kGameStateFreshlyInstalled then
-			self.wrappingPattern = self:getWrappingPattern()
-		end
+		self.wrappingPattern = self:getWrappingPattern()
 		
 		if self.id == "com.panic.launcher" then
 			self.extraInfo.cardStill = launcherCardImg
@@ -372,6 +379,10 @@ function Game:init(game)
 		
 		self.frameIndex = 0
 		self.loopCount = 0
+		
+		if fle.exists("images/icons/season1/" .. self.id .. ".pdi") then
+			self.extraInfo.iconStill = img.new("images/icons/season1/" .. self.id)
+		end
 	else
 		self.extraInfo.cardStill = emptyFolderImg
 		self.extraInfo.iconStill = emptyFolderIconImg
@@ -479,9 +490,7 @@ function Game:queueIdle()
 			self.halfFrameTimer = nil
 		end
 		
-		if not inListView then
-			self.frameIndex = 1
-		end
+		self.frameIndex = 1
 		self.loopCount = 0
 		self.looping = true
 		self.state = kGameStateIdle
@@ -521,20 +530,31 @@ function Game:leaveIcon()
 end
 
 function Game:enterIcon(frameNum)
-	local useDefault = self.extraInfo.imagePath == nil
-	local _, image = loadIcon(self, "icon-highlighted/" .. tostring(frameNum), useDefault)
-	self.currentIcon = image
+	if self.data:getInstalledState() == self.data.kPDGameStateFreshlyInstalled then
+		self.currentIcon = wrappedIcons[frameNum]
+	else
+		local useDefault = self.extraInfo.imagePath == nil
+		local _, image = loadIcon(self, "icon-highlighted/" .. tostring(frameNum), useDefault)
+		self.currentIcon = image
+	end
 end
 
 function Game:getIcon()
-	if self.state == nil or self.data:getInstalledState() == self.data.kPDGameStateFreshlyInstalled then
-		return nil
-	end
-	if self.extraInfo.iconAnimation == nil then
+	if self.extraInfo.iconAnimation == nil and self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled then
 		return self.extraInfo.iconStill
 	end
 	
-	if self.looping and self.extraInfo.iconAnimation.frames ~= nil and self.halfFrameTimer == nil then
+	local numFrames, loop
+	
+	if self.data:getInstalledState() == self.data.kPDGameStateFreshlyInstalled then
+		numFrames = #wrappedIcons
+		loop = 0
+	else
+		numFrames = #self.extraInfo.iconImage
+		loop = self.extraInfo.iconAnimation.loop
+	end
+	
+	if self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled and self.looping and self.extraInfo.iconAnimation.frames ~= nil and self.halfFrameTimer == nil then
 		self.halfFrameTimer = tmr.new(25)
 		self.halfFrameTimer.timerEndedCallback = function()
 			self:leaveIcon()
@@ -565,20 +585,20 @@ function Game:getIcon()
 		self.halfFrameTimer.discardOnCompletion = false
 		self.halfFrameTimer.repeats = true
 	elseif self.looping and self.halfFrameTimer == nil then
-		self.halfFrameTimer = tmr.new(25)
+		self.halfFrameTimer = tmr.new(self.data:getInstalledState() == self.data.kPDGameStateFreshlyInstalled and 100 or 25)
 		self.halfFrameTimer.timerEndedCallback = function()
 			self:leaveIcon()
 			
 			self.frameIndex = self.frameIndex + 1
-			local cycleDone = self.frameIndex > #self.extraInfo.iconImage
+			local cycleDone = self.frameIndex > numFrames
 			
 			if cycleDone then
 				self.loopCount = self.loopCount + 1
 				self.frameIndex = 1
 			
-				if self.extraInfo.iconAnimation.loop ~= 0 and self.loopCount >= self.extraInfo.iconAnimation.loop then
+				if loop ~= 0 and self.loopCount >= loop then
 					self.looping = false
-					self.frameIndex = #self.extraInfo.iconImage
+					self.frameIndex = numFrames
 					self:enterIcon(self.frameIndex)
 					
 					if self.halfFrameTimer ~= nil then

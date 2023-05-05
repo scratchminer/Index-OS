@@ -1169,7 +1169,7 @@ function CardView.AButtonUp()
 		onNextFrame = true
 		
 		tmr.performAfterDelay(300, function()
-			if gameList[selectedIndex].state ~= nil then
+			if gameList[selectedIndex].state ~= nil and gameList[selectedIndex].state ~= kGameStateUnwrapping then
 				if gameList[selectedIndex].data:getInstalledState() == gameList[selectedIndex].data.kPDGameStateFreshlyInstalled then
 					gameList[selectedIndex]:queueUnwrap()
 					allowVerticalMove = false
@@ -1186,7 +1186,7 @@ function CardView.AButtonUp()
 				end
 			end
 		end)
-	elseif not (inInfoView or inListView) and not playdate.buttonIsPressed("B") then
+	elseif not (inInfoView or inListView) and not playdate.buttonIsPressed("B") and gameList[selectedIndex].state ~= kGameStateUnwrapping then
 		if gameList[selectedIndex].state ~= nil and gameList[selectedIndex].data:getInstalledState() == gameList[selectedIndex].data.kPDGameStateFreshlyInstalled then
 			gameList[selectedIndex]:queueUnwrap()
 			allowVerticalMove = false
@@ -1282,6 +1282,10 @@ function CardView.AButtonUp()
 				listOpenSound:play()
 			end
 			
+			for _, game in ipairs(gameList) do
+				game:queueIdle()
+			end
+			
 			listViewTimer = tmr.new(300, function()
 				allowMoving = true
 				if listViewTimer ~= nil then
@@ -1293,9 +1297,6 @@ function CardView.AButtonUp()
 				
 				if gameList[selectedIndex].state ~= nil then
 					loadAll(true)
-					for _, game in ipairs(gameList) do
-						game:queueIdle()
-					end
 				end
 			end)
 			
@@ -1343,9 +1344,6 @@ function CardView.AButtonUp()
 				end
 				
 				topBarSprite:removeAnimator()
-				for _, game in ipairs(gameList) do
-					game:queueIdle()
-				end
 			end)
 			
 			cooldown = true
@@ -1952,21 +1950,27 @@ function CardView:draw(shake)
 		local boundLow, boundHigh
 		if anchorStart or #gameList <= 5 then
 			boundLow = 1
-			boundHigh = #gameList <= 5 and #gameList or 3
+			boundHigh = #gameList <= 5 and #gameList or 5
 		elseif anchorEnd and #gameList > 5 then
-			boundLow = #gameList - 3
+			boundLow = #gameList - 5
 			boundHigh = #gameList
 		else
-			boundLow = selectedIndex - 1
-			boundHigh = selectedIndex + 1
+			boundLow = selectedIndex - 2
+			boundHigh = selectedIndex + 2
 		end
+		
+		if listViewTimer == nil and listViewTextAnim ~= nil then
+			boundLow = boundLow - 1
+			boundHigh = boundHigh + 1
+		end
+		
+		gfx.setScreenClipRect(0, 0, 400, 196)
 		
 		for i = boundLow, boundHigh do
 			if i >= 1 and i <= #gameList then
 				local yo = (i - selectedIndex) * 36
 			
 				gfx.setDrawOffset(0, yo)
-				
 				local icon = gameList[i]:getIcon()
 				
 				if i == selectedIndex and gameList[selectedIndex].state ~= nil then
@@ -1976,10 +1980,13 @@ function CardView:draw(shake)
 				end
 				
 				if icon ~= nil then
+					local offset = oldOff
+					
 					if oldOff == listViewTextOffset + 4 then
 						gfx.setDrawOffset(0, (i - 1) * 36)
+						offset = listViewTextAnim:currentValue().y + 4
 					end
-					icon:draw(349, oldOff + 3)
+					icon:draw(349, offset + 3)
 				elseif icon == nil and i == selectedIndex then
 					defaultIconImg:draw(349, off - jitter + 3)
 				end
