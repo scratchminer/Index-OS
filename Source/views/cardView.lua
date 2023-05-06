@@ -238,7 +238,7 @@ local loadAll = function(dontReload)
 			local upper = math.ceil(offY / 200) + 1
 			
 			for i = lower - 1, upper + 1 do
-				if gameList[i] ~= nil and not gameList[i].loaded then
+				if gameList[i] ~= nil and not gameList[i].loaded and gameList[i].loadCardImages then
 					gameList[i]:loadCardImages()
 					gameList[i].cardSprite:moveBy(0, (i - 1) * 200)
 				end
@@ -260,13 +260,13 @@ local loadAll = function(dontReload)
 				scrnIndex2 = selectedIndex + 1
 			end
 			
-			if gameList[scrnIndex] ~= nil and not gameList[scrnIndex].loaded then
+			if gameList[scrnIndex] ~= nil and not gameList[scrnIndex].loaded and gameList[scrnIndex].loadCardImages then
 				gameList[scrnIndex]:loadCardImages()
 				gameList[scrnIndex].cardSprite:moveTo(200, 120)
 				gameList[scrnIndex].cardSprite:moveBy(0, (selectedIndex - 2) * 200)
 			end
 			
-			if gameList[scrnIndex2] ~= nil and not gameList[scrnIndex2].loaded then
+			if gameList[scrnIndex2] ~= nil and not gameList[scrnIndex2].loaded and gameList[scrnIndex2].loadCardImages then
 				gameList[scrnIndex2]:loadCardImages()
 				gameList[scrnIndex2].cardSprite:moveTo(200, 120)
 				gameList[scrnIndex2].cardSprite:moveBy(0, (selectedIndex - 1) * 200)
@@ -513,6 +513,10 @@ function CardView:useGroup(groupStr, currentGame)
 		end
 	end
 	
+	if #group == 0 then
+		table.insert(group, Game())
+	end
+	
 	if selectedIndex == nil then
 		selectedIndex = 1
 	end
@@ -520,10 +524,6 @@ function CardView:useGroup(groupStr, currentGame)
 	
 	if loadFaster then
 		group = loadGroupFaster(idx, selectedIndex)
-	end
-	
-	if #group == 0 then
-		table.insert(group, Game())
 	end
 	
 	self.gameList = group
