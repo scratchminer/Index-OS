@@ -268,10 +268,7 @@ function NewFolderView.AButtonDown()
 			currentText = currentText .. characters[currentRow]:sub(symbolPos, symbolPos)
 			keySound:play()
 		elseif currentRow == kRowMenu then
-			if menuPos == 1 then
-				nextView = ""
-				return
-			elseif menuPos == 2 then
+			if menuPos == 2 then
 				currentText = currentText .. " "
 				keySound:play()
 			elseif menuPos == 3 then
@@ -299,6 +296,10 @@ end
 function playdate.AButtonUp()
 	if keyTimer ~= nil then
 		keyTimer:remove()
+	end
+	
+	if currentRow == kRowMenu and menuPos == 1 then
+		nextView = ""
 	end
 end
 
