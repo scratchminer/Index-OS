@@ -406,6 +406,7 @@ function getGroupByName(groupName, groups)
 					end
 				end)
 				
+				groups[index] = systemGroup
 				return systemGroup, index
 			end
 			
