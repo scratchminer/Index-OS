@@ -179,7 +179,9 @@ local loadAll = function(dontReload)
 	if gameMove == nil or gameMove.index == nil then
 		if dontReload then
 			for i = 1, #gameList do
-				gameList[i]:destroySprite()
+				if gameList[i].loaded then
+					gameList[i]:destroySprite()
+				end
 			end
 		else
 			offY = offY or (selectedIndex - 1) * 200
