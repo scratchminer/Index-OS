@@ -1,5 +1,4 @@
 import("CoreLibs/timer")
-import("CoreLibs/frameTimer")
 import("CoreLibs/graphics")
 import("CoreLibs/object")
 import("CoreLibs/sprites")
@@ -266,11 +265,14 @@ function Game:init(game)
 		local useDefault = self.extraInfo.imagePath == nil or not fle.isdir(self.extraInfo.imagePath)
 		
 		if self.extraInfo.cardStill == nil then
-			if self.extraInfo.imagePath ~= nil then
-				
+			local _, image
+			
+			if self.extraInfo.imagePath ~= nil and useDefault then
+				_, image = loadCardImage(self, "", false)
+			else
+				_, image = loadCardImage(self, "card", useDefault)
 			end
 			
-			local _, image = loadCardImage(self, "card", useDefault)
 			self.extraInfo.cardStill = image
 		end
 		
@@ -409,6 +411,9 @@ function Game:refreshMetadata()
 				metadata.imagePath = string.sub(metadata.imagePath, 1, -2)
 			end
 			self.extraInfo.imagePath = self.path .. "/" .. metadata.imagePath
+			if endsWith(self.extraInfo.imagePath, ".png") then
+				self.extraInfo.imagePath = self.extraInfo.imagePath:sub(1, -5)
+			end
 		end
 		
 		if metadata.launchSoundPath ~= nil and metadata.launchSoundPath ~= "" then
