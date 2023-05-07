@@ -1849,6 +1849,7 @@ function CardView:draw(shake)
 				gameMove.cardSprite:moveTo(200, 114)
 				gameMove.cardSprite:setZIndex(1000)
 				gameMove.cardSprite:setIgnoresDrawOffset(true)
+				gameMove.cardSprite:setClipRect(25, 43, 350, 155)
 				gameMove.cardSprite:add()
 				
 				if folderName ~= "System" then

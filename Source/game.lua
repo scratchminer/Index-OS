@@ -456,6 +456,7 @@ function Game:queueUnwrap(index)
 		frameCounter = 1
 		self.frameIndex = 1
 		self.state = kGameStateUnwrapping
+		
 		unwrapSound:stop()
 		unwrapSound:setOffset(0)
 		unwrapSound:play()
@@ -1035,6 +1036,20 @@ end
 function Game:enterFrame(frameNum)
 	local useDefault = self.extraInfo.imagePath == nil
 	local _, image = loadCardImage(self, "card-highlighted/" .. tostring(frameNum), useDefault)
+	
+	local w, h = image:getSize()
+	if (w ~= 350 or h ~= 155) and self.id ~= "com.panic.launcher" then
+		local mask = image:getMaskImage() or img.new(400, 240, gfx.kColorWhite)
+		gfx.pushContext(mask)
+		gfx.setColor(gfx.kColorBlack)
+		gfx.fillRect(0, 0, 24, 240)
+		gfx.fillRect(375, 0, 24, 240)
+		gfx.fillRect(24, 0, 42, 350)
+		gfx.fillRect(24, 197, 42, 350)
+		gfx.popContext()
+		image:setMaskImage(mask)
+	end
+	
 	self.currentCard = image
 	self.cardSprite:setImage(self.currentCard)
 	self.cardSprite:markDirty()
