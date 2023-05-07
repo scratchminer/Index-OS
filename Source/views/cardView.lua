@@ -14,6 +14,7 @@ import("views/secretView")
 local anm = playdate.graphics.animator
 local dts = playdate.datastore
 local fle = playdate.file
+local frt = playdate.frameTimer
 local geo = playdate.geometry
 local gfx = playdate.graphics
 local spr = playdate.graphics.sprite
@@ -244,7 +245,9 @@ local loadAll = function(dontReload)
 				end
 			end
 			
-			gameList[selectedIndex]:queueIdle()
+			if gameList[selectedIndex].state == kGameStateIdle then
+				gameList[selectedIndex]:queueIdle()
+			end
 		else
 			local scrnIndex
 			local scrnIndex2
@@ -655,7 +658,6 @@ function CardView.upButtonDown()
 			
 			local game = playdate.getCurrentGame()
 			if gameList[selectedIndex] ~= nil and gameList[selectedIndex].state ~= nil and gameMove == nil then
-				gameList[selectedIndex]:queueIdle()
 				local launcherPrefs = {selectedGamePath = game:getPath()}
 				dts.write(launcherPrefs, "launcherprefs", true)
 			end
@@ -755,7 +757,6 @@ function CardView.downButtonDown()
 			
 			local game = playdate.getCurrentGame()
 			if gameList[selectedIndex] ~= nil and gameList[selectedIndex].state ~= nil and gameMove == nil then
-				gameList[selectedIndex]:queueIdle()
 				local launcherPrefs = {selectedGamePath = game:getPath()}
 				dts.write(launcherPrefs, "launcherprefs", true)
 			end
@@ -925,7 +926,7 @@ function CardView.BButtonUp()
 			cooldown = true
 		end)
 		
-		loadAll(false)
+		onNextFrame = true
 		return
 	elseif inInfoView and infoViewTimer == nil then
 		inInfoView = false
@@ -1165,7 +1166,6 @@ function CardView.AButtonUp()
 		end
 		
 		allowVerticalMove = true
-		onNextFrame = true
 		
 		bottomBarSprite:setImageWithUpdate(barRegularImage)
 		
@@ -1718,10 +1718,13 @@ function CardView:draw(shake)
 	end
 	
 	if onNextFrame == true and first == false then
+		loadAll(true)
 		loadAll(false)
 		prevIndex = selectedIndex
+		onNextFrame = false
 	elseif onNextFrame == true then
 		prevIndex = selectedIndex
+		onNextFrame = false
 	end
 	
 	local cardImg, unlocked
@@ -1938,6 +1941,7 @@ function CardView:draw(shake)
 	end
 	
 	tmr.updateTimers()
+	frt.updateTimers()
 	
 	local barYOffset = nil
 	
@@ -1997,7 +2001,6 @@ function CardView:draw(shake)
 	end
 	
 	spr.update()
-	onNextFrame = false
 	
 	if inListView or listViewAnim ~= nil and not listViewAnim:ended() then
 		local lower = 16

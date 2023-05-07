@@ -1,4 +1,5 @@
 import("CoreLibs/timer")
+import("CoreLibs/frameTimer")
 import("CoreLibs/graphics")
 import("CoreLibs/object")
 import("CoreLibs/sprites")
@@ -9,6 +10,7 @@ local aft = playdate.geometry.affineTransform
 local dis = playdate.display
 local dts = playdate.datastore
 local fle = playdate.file
+local frt = playdate.frameTimer
 local flp = playdate.sound.fileplayer
 local gfx = playdate.graphics
 local img = playdate.graphics.image
@@ -150,11 +152,6 @@ local loadCardImage = function(self, imagePath, useDefault)
 		path = path .. "/" .. imagePath
 	end
 	
-	local w, h = gfx.imageSizeAtPath(path)
-	
-	w = math.floor(w or 350)
-	h = math.floor(h or 155)
-	
 	local cardImage = tryLoad(path, table.remove(cardImagePool))
 	if cardImage ~= nil then
 		return true, cardImage
@@ -166,7 +163,7 @@ local loadCardImage = function(self, imagePath, useDefault)
 			cardImage = tryLoad(self.path .. "/card", table.remove(cardImagePool))
 		end
 		if cardImage == nil then
-			cardImage = self:getDummyCard(w, h)
+			cardImage = self:getDummyCard(350, 155)
 		end
 		
 		return false, cardImage
@@ -534,7 +531,10 @@ function Game:getDummyCard(w, h)
 end
 
 function Game:leaveIcon()
-	table.insert(iconImagePool, self.currentIcon)
+	if self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled then
+		table.insert(iconImagePool, self.currentIcon)
+	end
+	
 	self.currentIcon = self.extraInfo.iconStill
 end
 
@@ -564,7 +564,7 @@ function Game:getIcon()
 	end
 	
 	if self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled and self.looping and self.extraInfo.iconAnimation.frames ~= nil and self.halfFrameTimer == nil then
-		self.halfFrameTimer = tmr.new(25)
+		self.halfFrameTimer = frt.new(1)
 		self.halfFrameTimer.timerEndedCallback = function()
 			self:leaveIcon()
 			
@@ -789,7 +789,7 @@ function Game:getCardImage(static)
 			if self.extraInfo.animated and self.looping == true then
 				if self.extraInfo.cardAnimation.frames ~= nil then
 					if self.halfFrameTimer == nil then
-						self.halfFrameTimer = tmr.new(25)
+						self.halfFrameTimer = frt.new(1)
 						self.halfFrameTimer.timerEndedCallback = function()
 							self:leaveFrame()
 							
@@ -821,7 +821,7 @@ function Game:getCardImage(static)
 					return self.currentCard, true
 				else
 					if self.halfFrameTimer == nil then
-						self.halfFrameTimer = tmr.new(25)
+						self.halfFrameTimer = frt.new(1)
 						self.halfFrameTimer.timerEndedCallback = function()
 							self:leaveFrame()
 							
@@ -880,7 +880,7 @@ function Game:getCardImage(static)
 			if #self.extraInfo.launchImage > 1 then
 				if self.halfFrameTimer == nil then
 					sys.setLaunchAnimationActive(true)
-					self.halfFrameTimer = tmr.new(25)
+					self.halfFrameTimer = frt.new(1)
 					self.halfFrameTimer.timerEndedCallback = function()
 						if not self.loaded then
 							return
@@ -1029,6 +1029,7 @@ end
 
 function Game:leaveFrame()
 	table.insert(cardImagePool, self.currentCard)
+	self.currentCard = self.cardStill
 end
 
 function Game:enterFrame(frameNum)
