@@ -31,6 +31,8 @@ local frameCounter = 1
 
 local launcherCardImg = img.new("images/launcher/launcherCard")
 local launcherPressedImg = img.new("images/launcher/launcherPressed")
+local launcherIconImg = img.new("images/launcher/launcherIcon")
+
 local blackImg = img.new(400, 240, gfx.kColorBlack)
 local emptyFolderImg = img.new("images/groupEmpty")
 local emptyFolderIconImg = img.new("images/groupEmptyIcon")
@@ -550,6 +552,10 @@ function Game:enterIcon(frameNum)
 end
 
 function Game:getIcon()
+	if self.id == "com.panic.launcher" then
+		return launcherIconImg
+	end
+	
 	if self.extraInfo.iconAnimation == nil and self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled then
 		return self.extraInfo.iconStill
 	end
