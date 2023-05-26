@@ -1388,7 +1388,9 @@ function CardView.AButtonUp()
 			end
 			
 			for _, game in ipairs(gameList) do
-				game:queueIdle()
+				if game.id ~= nil then
+					game:queueIdle()
+				end
 			end
 			
 			listViewTimer = tmr.new(300, function()
@@ -1431,7 +1433,9 @@ function CardView.AButtonUp()
 			if gameList[selectedIndex].state ~= nil then
 				loadAll(false)
 				for _, game in ipairs(gameList) do
-					game:queueIdle()
+					if game.id ~= nil then
+						game:queueIdle()
+					end
 				end
 			end
 			
