@@ -14,6 +14,7 @@ local frt = playdate.frameTimer
 local flp = playdate.sound.fileplayer
 local gfx = playdate.graphics
 local img = playdate.graphics.image
+local smp = playdate.sound.sampleplayer
 local spr = playdate.graphics.sprite
 local sys = playdate.system
 local tmr = playdate.timer
@@ -45,7 +46,17 @@ local newLaunchImage
 local underlayVideo, underlayMaskVideo
 local fadeOutVideo, fadeOutMaskVideo
 local unwrapVideo, unwrapMaskVideo, unwrapLowerMaskVideo
-local unwrapSound = flp.new("sounds/unwrap")
+local unwrapSound = smp.new("sounds/unwrap")
+
+local patternWithRibbon = img.new(400, 240)
+
+local patternMask = img.new(400, 240, gfx.kColorBlack)
+local ribbon = img.new(400, 240, gfx.kColorBlack)
+local ribbonMask = img.new(400, 240, gfx.kColorBlack)
+local fadeOut = img.new(400, 240, gfx.kColorBlack)
+local fadeOutMask = img.new(400, 240, gfx.kColorBlack)
+local underlayMask = img.new(400, 240, gfx.kColorBlack)
+local underlay = img.new(400, 240, gfx.kColorBlack)
 
 local wrappedIcons = {
 	img.new("images/icons/wrapped/1"),
@@ -460,7 +471,6 @@ function Game:queueUnwrap(index)
 		self.state = kGameStateUnwrapping
 		
 		unwrapSound:stop()
-		unwrapSound:setOffset(0)
 		unwrapSound:play()
 	end
 end
@@ -694,100 +704,96 @@ function Game:getCardImage(static)
 			end
 		end
 		
-		local renderVideoFrame = function(video, frameNum)
-			local w, h = video:getSize()
+		local renderVideoFrame = function(video, frameNum, image)
 			
-			local image = img.new(w, h, gfx.kColorBlack)
-			if frameNum <= video:getFrameCount() then
+			if video:getContext() ~= image then
+				image:clear(gfx.kColorBlack)
 				video:setContext(image)
+			end
+			
+			if frameNum <= video:getFrameCount() then
 				video:renderFrame(frameNum)
 			end
-						
-			return image
 		end
 		
-		local fadeOutMask
-		local fadeOut
-		local underlayMask
-		local underlay
-		
-		local ribbonMask
-		local ribbon = ribbonImg
-		local patternMask = patternMaskImg
 		local pattern = self.wrappingPattern
-		
+		local redraw = true
 		local canSwitch = true
-		local patternWithRibbon = img.new(400, 240)
 		
 		setStencil(nil)
 		
 		if self.state == kGameStateIdle then
+			patternWithRibbon:clear(gfx.kColorClear)
 			gfx.pushContext(patternWithRibbon)
+			
+			ribbon = ribbonImg:copy()
+			patternMask = patternMaskImg:copy()
+			ribbonMask:clear(gfx.kColorWhite)
+			
 		elseif self.state == kGameStateAppearing then
 			frameCounter = math.floor(unwrapSound:getOffset() * appearVideo:getFrameRate()) + 1
 			
-			ribbonMask = renderVideoFrame(appearLowerMaskVideo, frameCounter)
-			ribbon = renderVideoFrame(appearVideo, frameCounter)
+			renderVideoFrame(appearLowerMaskVideo, frameCounter, ribbonMask)
+			renderVideoFrame(appearVideo, frameCounter, ribbon)
 			
-			patternMask = renderVideoFrame(appearMaskVideo, frameCounter)
+			renderVideoFrame(appearMaskVideo, frameCounter, patternMask)
 			
 			canSwitch = frameCounter > 27
 			
 			if frameCounter >= appearVideo:getFrameCount() then
-				frameCounter = 1
 				self:queueIdle()
 			end
 			
+			patternWithRibbon:clear(gfx.kColorClear)
 			gfx.pushContext(patternWithRibbon)
 		elseif self.state == kGameStateUnwrapping then
 			local unwrapFrame = math.floor(unwrapSound:getOffset() * 20) + 1
 			
-			if frameCounter >= unwrapFrame then
+			redraw = frameCounter ~= unwrapFrame
+			
+			if redraw then
 				frameCounter = math.floor(unwrapSound:getOffset() * 20) + 1
-			else
-				frameCounter = frameCounter + 1
+				
+				renderVideoFrame(fadeOutMaskVideo, frameCounter, fadeOutMask)
+				renderVideoFrame(fadeOutVideo, frameCounter, fadeOut)
+				renderVideoFrame(underlayMaskVideo, frameCounter, underlayMask)
+				renderVideoFrame(underlayVideo, frameCounter, underlay)
+				
+				renderVideoFrame(unwrapLowerMaskVideo, frameCounter, ribbonMask)
+				renderVideoFrame(unwrapVideo, frameCounter, ribbon)
+				
+				renderVideoFrame(unwrapMaskVideo, frameCounter, patternMask)
+				
+				canSwitch = frameCounter > 59
+				
+				if frameCounter >= unwrapVideo:getFrameCount() then
+					self:queueIdle()
+				end
+				
+				gfx.pushContext(patternWithRibbon)
+				gfx.clear(gfx.kColorClear)
+				
+				self.extraInfo.cardStill:drawAnchored(200, 119, 0.5, 0.5)
+				
+				setStencil(fadeOutMask)
+				fadeOut:draw(0, 0)
+				
+				setStencil(underlayMask)
+				underlay:draw(0, 0)
 			end
-			
-			fadeOutMask = renderVideoFrame(fadeOutMaskVideo, frameCounter)
-			fadeOut = renderVideoFrame(fadeOutVideo, frameCounter)
-			underlayMask = renderVideoFrame(underlayMaskVideo, frameCounter)
-			underlay = renderVideoFrame(underlayVideo, frameCounter)
-			
-			ribbonMask = renderVideoFrame(unwrapLowerMaskVideo, frameCounter)
-			ribbon = renderVideoFrame(unwrapVideo, frameCounter)
-			
-			patternMask = renderVideoFrame(unwrapMaskVideo, frameCounter)
-			
-			canSwitch = frameCounter > 59
-			
-			if frameCounter >= unwrapVideo:getFrameCount() then
-				self:queueIdle()
-			end
-			
-			gfx.pushContext(patternWithRibbon)
-			
-			self.extraInfo.cardStill:drawAnchored(200, 119, 0.5, 0.5)
-			
-			self.frameIndex = self.frameIndex + 1
 		end
 		
-		if underlay ~= nil then
-			setStencil(fadeOutMask)
-			fadeOut:draw(0, 0)
+		if redraw then
+			setStencil(ribbonMask)
+			ribbon:draw(0, 0)
 			
-			setStencil(underlayMask)
-			underlay:draw(0, 0)
+			setStencil(patternMask)
+			pattern:draw(0, 0)
+			
+			setStencil(nil)
+			gfx.popContext()
 		end
 		
-		setStencil(ribbonMask)
-		ribbon:draw(0, 0)
-		
-		setStencil(patternMask)
-		pattern:draw(0, 0)
-		
-		setStencil(nil)
-		
-		gfx.popContext()
 		self.cardSprite:setImage(patternWithRibbon)
 		
 		return patternWithRibbon, canSwitch

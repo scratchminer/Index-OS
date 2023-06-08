@@ -208,7 +208,9 @@ local loadAll = function(dontReload)
 	else
 		if dontReload then
 			for i = 1, #gameList do
-				gameList[i]:destroySprite()
+				if type(gameList[i]) == "table" then
+					gameList[i]:destroySprite()
+				end
 			end
 		else
 			local scrnIndex
