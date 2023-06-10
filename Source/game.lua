@@ -28,8 +28,6 @@ kGameStateUnwrapping = 5
 
 garbageTimer = nil
 
-local frameCounter = 1
-
 local launcherCardImg = img.new("images/launcher/launcherCard")
 local launcherPressedImg = img.new("images/launcher/launcherPressed")
 local launcherIconImg = img.new("images/launcher/launcherIcon")
@@ -454,24 +452,22 @@ end
 
 function Game:queueAppear()
 	if self.state ~= nil then
-		frameCounter = 1
 		self.state = kGameStateAppearing
 	end
 end
 
-function Game:queueUnwrap(index)
+function Game:queueUnwrap()
 	if self.state ~= nil then
 		if self.halfFrameTimer ~= nil then
 			self.halfFrameTimer:remove()
 			self.halfFrameTimer = nil
 		end
 		
-		frameCounter = 1
-		self.frameIndex = 1
-		self.state = kGameStateUnwrapping
-		
 		unwrapSound:stop()
 		unwrapSound:play()
+		
+		self.frameIndex = 0
+		self.state = kGameStateUnwrapping
 	end
 end
 
@@ -661,34 +657,6 @@ function Game:getCardImage(static)
 		end
 	end
 	
-	if not self.loaded then
-		self.cardSprite:setImage(self.extraInfo.cardStill)
-		return self.extraInfo.cardStill, true
-	end
-	
-	if static == true then
-		if self.halfFrameTimer ~= nil then
-			self.halfFrameTimer:remove()
-			self.halfFrameTimer = nil
-		end
-		
-		local firstCardImage
-		
-		if self.extraInfo.animated and self.extraInfo.cardAnimation.frames ~= nil then
-			self:leaveFrame()
-			self:enterFrame(self.extraInfo.cardAnimation.frames[#self.extraInfo.cardAnimation.frames])
-			firstCardImage = self.currentCard
-		elseif self.extraInfo.animated then
-			self:leaveFrame()
-			self:enterFrame(#self.extraInfo.cardImage)
-			firstCardImage = self.currentCard
-		elseif not self.extraInfo.animated then
-			firstCardImage = self.extraInfo.cardImage
-		end
-		
-		return firstCardImage, true
-	end
-	
 	if self.data:getInstalledState() == self.data.kPDGameStateFreshlyInstalled or self.state == kGameStateUnwrapping or self.state == kGameStateAppearing then
 		if self.halfFrameTimer ~= nil then
 			self.halfFrameTimer:remove()
@@ -705,7 +673,6 @@ function Game:getCardImage(static)
 		end
 		
 		local renderVideoFrame = function(video, frameNum, image)
-			
 			if video:getContext() ~= image then
 				image:clear(gfx.kColorBlack)
 				video:setContext(image)
@@ -729,51 +696,45 @@ function Game:getCardImage(static)
 			ribbon = ribbonImg:copy()
 			patternMask = patternMaskImg:copy()
 			ribbonMask:clear(gfx.kColorWhite)
-			
 		elseif self.state == kGameStateAppearing then
-			frameCounter = math.floor(unwrapSound:getOffset() * appearVideo:getFrameRate()) + 1
+			self.frameIndex = math.floor(unwrapSound:getOffset() * appearVideo:getFrameRate()) + 1
 			
-			renderVideoFrame(appearLowerMaskVideo, frameCounter, ribbonMask)
-			renderVideoFrame(appearVideo, frameCounter, ribbon)
+			renderVideoFrame(appearLowerMaskVideo, self.frameIndex, ribbonMask)
+			renderVideoFrame(appearVideo, self.frameIndex, ribbon)
 			
-			renderVideoFrame(appearMaskVideo, frameCounter, patternMask)
+			renderVideoFrame(appearMaskVideo, self.frameIndex, patternMask)
 			
-			canSwitch = frameCounter > 27
-			
-			if frameCounter >= appearVideo:getFrameCount() then
-				self:queueIdle()
-			end
+			canSwitch = self.frameIndex > 27
 			
 			patternWithRibbon:clear(gfx.kColorClear)
 			gfx.pushContext(patternWithRibbon)
 		elseif self.state == kGameStateUnwrapping then
 			local unwrapFrame = math.floor(unwrapSound:getOffset() * 20) + 1
 			
-			redraw = frameCounter ~= unwrapFrame
+			redraw = self.frameIndex < unwrapFrame and unwrapFrame - self.frameIndex < 10
+			canSwitch = self.frameIndex > 59
+			
+			if self.frameIndex >= unwrapVideo:getFrameCount() then
+				self:queueIdle()
+			end
 			
 			if redraw then
-				frameCounter = math.floor(unwrapSound:getOffset() * 20) + 1
+				self.frameIndex = math.floor(unwrapSound:getOffset() * 20) + 1
 				
-				renderVideoFrame(fadeOutMaskVideo, frameCounter, fadeOutMask)
-				renderVideoFrame(fadeOutVideo, frameCounter, fadeOut)
-				renderVideoFrame(underlayMaskVideo, frameCounter, underlayMask)
-				renderVideoFrame(underlayVideo, frameCounter, underlay)
+				renderVideoFrame(fadeOutMaskVideo, self.frameIndex, fadeOutMask)
+				renderVideoFrame(fadeOutVideo, self.frameIndex, fadeOut)
+				renderVideoFrame(underlayMaskVideo, self.frameIndex, underlayMask)
+				renderVideoFrame(underlayVideo, self.frameIndex, underlay)
 				
-				renderVideoFrame(unwrapLowerMaskVideo, frameCounter, ribbonMask)
-				renderVideoFrame(unwrapVideo, frameCounter, ribbon)
+				renderVideoFrame(unwrapLowerMaskVideo, self.frameIndex, ribbonMask)
+				renderVideoFrame(unwrapVideo, self.frameIndex, ribbon)
 				
-				renderVideoFrame(unwrapMaskVideo, frameCounter, patternMask)
-				
-				canSwitch = frameCounter > 59
-				
-				if frameCounter >= unwrapVideo:getFrameCount() then
-					self:queueIdle()
-				end
+				renderVideoFrame(unwrapMaskVideo, self.frameIndex, patternMask)
 				
 				gfx.pushContext(patternWithRibbon)
 				gfx.clear(gfx.kColorClear)
 				
-				self.extraInfo.cardStill:drawAnchored(200, 119, 0.5, 0.5)
+				self.extraInfo.cardStill:drawAnchored(200, 120, 0.5, 0.5)
 				
 				setStencil(fadeOutMask)
 				fadeOut:draw(0, 0)
@@ -797,7 +758,32 @@ function Game:getCardImage(static)
 		self.cardSprite:setImage(patternWithRibbon)
 		
 		return patternWithRibbon, canSwitch
-	else
+	end
+		
+	if self.loaded then
+		if static == true then
+			if self.halfFrameTimer ~= nil then
+				self.halfFrameTimer:remove()
+				self.halfFrameTimer = nil
+			end
+		
+			local firstCardImage
+		
+			if self.extraInfo.animated and self.extraInfo.cardAnimation.frames ~= nil then
+				self:leaveFrame()
+				self:enterFrame(self.extraInfo.cardAnimation.frames[#self.extraInfo.cardAnimation.frames])
+				firstCardImage = self.currentCard
+			elseif self.extraInfo.animated then
+				self:leaveFrame()
+				self:enterFrame(#self.extraInfo.cardImage)
+				firstCardImage = self.currentCard
+			elseif not self.extraInfo.animated then
+				firstCardImage = self.extraInfo.cardImage
+			end
+		
+			return firstCardImage, true
+		end
+		
 		if self.state == kGameStateIdle then
 			if self.extraInfo.animated and self.looping == true then
 				if self.extraInfo.cardAnimation.frames ~= nil then
@@ -979,6 +965,9 @@ function Game:getCardImage(static)
 			
 			return launchImage, false
 		end
+	else
+		self.cardSprite:setImage(self.extraInfo.cardStill)
+		return self.extraInfo.cardStill, true
 	end
 end
 
@@ -1111,7 +1100,7 @@ function Game:loadLaunchImages()
 end
 
 function Game:shouldUnwrap()
-	return self.state == kGameStateUnwrapping and frameCounter == 60
+	return self.state == kGameStateUnwrapping and self.frameIndex >= 60
 end
 
 function Game:getLaunchParams()
@@ -1121,6 +1110,14 @@ function Game:getLaunchParams()
 end
 
 function Game:getTitle()
+	if self.state == nil then
+		return "Empty Folder"
+	else
+		return self.title
+	end
+end
+
+function Game:getListedTitle()
 	if self.state == nil then
 		return "Empty Folder"
 	elseif self.data:getInstalledState() == self.data.kPDGameStateFreshlyInstalled then
@@ -1161,7 +1158,7 @@ function Game:drawInfoText()
 	else
 		local escapedTitle = "*" .. self.title:gsub("*", "**"):gsub("_", "__") .. "*\nby *" .. self.author:gsub("*", "**"):gsub("_", "__") .. "*"
 		local escapedDescription = self.extraInfo.description:gsub("*", "**"):gsub("_", "__")
-	
+		
 		local versionText
 		if self.version == nil or self.version == "" then
 			versionText = "No version\n" .. self.id

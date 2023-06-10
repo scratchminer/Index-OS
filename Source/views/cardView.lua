@@ -1361,7 +1361,7 @@ function CardView.AButtonUp()
 					
 					local yPos = 14
 					for i = 1, #gameList do
-						local text = gameList[i]:getTitle():gsub("*", "**"):gsub("_", "__")
+						local text = gameList[i].data and gameList[i]:getListedTitle():gsub("*", "**"):gsub("_", "__") or "Loading..."
 						gfx.drawTextInRect("*" .. text .. "*", 24, yPos, 300, 24, nil, "...", kTextAlignment.left)
 						yPos = yPos + 36
 					end
@@ -1758,10 +1758,12 @@ function CardView:draw(shake)
 	if (gameMove == nil or gameMove.index == nil) and not inListView and not inInfoView then
 		if gameList[selectedIndex - 1] ~= nil and gameList[selectedIndex - 1].state == kGameStateUnwrapping then
 			gameList[selectedIndex - 1]:queueIdle()
+			gameList[selectedIndex - 1].cardSprite:setImage(gameList[selectedIndex - 1].extraInfo.cardStill)
 		end
 		
 		if gameList[selectedIndex + 1] ~= nil and gameList[selectedIndex + 1].state == kGameStateUnwrapping then
 			gameList[selectedIndex + 1]:queueIdle()
+			gameList[selectedIndex + 1].cardSprite:setImage(gameList[selectedIndex + 1].extraInfo.cardStill)
 		end
 		
 		if gameList[selectedIndex] ~= nil and gameList[selectedIndex].cardSprite ~= nil then
@@ -1788,10 +1790,12 @@ function CardView:draw(shake)
 		
 		if gameList[scrnIndex] ~= nil and gameList[scrnIndex].state == kGameStateUnwrapping then
 			gameList[scrnIndex]:queueIdle()
+			gameList[scrnIndex].cardSprite:setImage(gameList[scrnIndex].extraInfo.cardStill)
 		end
 		
 		if gameList[scrnIndex2] ~= nil and gameList[scrnIndex2].state == kGameStateUnwrapping then
 			gameList[scrnIndex2]:queueIdle()
+			gameList[scrnIndex2].cardSprite:setImage(gameList[scrnIndex2].extraInfo.cardStill)
 		end
 	end
 	
