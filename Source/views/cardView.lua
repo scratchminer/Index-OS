@@ -1362,6 +1362,8 @@ function CardView.AButtonUp()
 					local yPos = 14
 					for i = 1, #gameList do
 						local text = gameList[i].data and gameList[i]:getListedTitle():gsub("*", "**"):gsub("_", "__") or "Loading..."
+						text = gameList[i].state and text or gameList[i]:getTitle()
+						
 						gfx.drawTextInRect("*" .. text .. "*", 24, yPos, 300, 24, nil, "...", kTextAlignment.left)
 						yPos = yPos + 36
 					end

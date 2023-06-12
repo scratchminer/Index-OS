@@ -562,7 +562,7 @@ function Game:getIcon()
 		return launcherIconImg
 	end
 	
-	if self.extraInfo.iconAnimation == nil and self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled then
+	if self.extraInfo.iconAnimation == nil and (self.state == nil or self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled) then
 		return self.extraInfo.iconStill
 	end
 	
