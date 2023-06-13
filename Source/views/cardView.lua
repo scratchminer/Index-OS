@@ -44,19 +44,19 @@ local getBatteryIndex = function()
 	local pct = playdate.getBatteryPercentage()
 	local pwr = playdate.getPowerStatus()
 	
-	if pct == 100 then
+	if pct >= 99.5 then
 		return kBatteryIndexFull
 	elseif pwr.charging and pwr.screws then
 		return kBatteryChargingDock
 	elseif pwr.charging and pwr.USB then
 		return kBatteryChargingUSB
-	elseif pct < 100 and pct >= 88 then
+	elseif pct < 99.5 and pct >= 87.5 then
 		return kBatteryIndexAlmostFull
-	elseif pct < 88 and pct >= 68 then
+	elseif pct < 87.5 and pct >= 67.5 then
 		return kBatteryIndexThreeQuarters
-	elseif pct < 68 and pct >= 38 then
+	elseif pct < 67.5 and pct >= 37.5 then
 		return kBatteryIndexHalf
-	elseif pct < 38 and pct >= prefs.showBatteryBelowThreshold then
+	elseif pct < 37.5 and pct >= prefs.showBatteryBelowThreshold then
 		return kBatteryIndexQuarter
 	elseif pct < prefs.showBatteryBelowThreshold then
 		return kBatteryIndexLow
@@ -332,7 +332,7 @@ local makeTopBar = function()
 			local pwr = playdate.getPowerStatus()
 		
 			if prefs.showBatteryPercentage or pwr.charging or pwr.USB or pwr.screws or pct < prefs.showBatteryBelowThreshold then
-				if pct < 50 then
+				if pct < 50 or pct > 100 then
 					pct = math.floor(pct)
 				else
 					pct = math.ceil(pct)
