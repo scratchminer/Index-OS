@@ -228,7 +228,7 @@ local loadAll = function(dontReload)
 			end
 			
 			for i = 1, #gameList do
-				if i ~= scrnIndex and i ~= scrnIndex2 then
+				if i ~= scrnIndex and i ~= scrnIndex2 and type(gameList[i]) == "table" then
 					gameList[i]:destroySprite()
 				end
 			end
