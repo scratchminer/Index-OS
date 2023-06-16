@@ -154,6 +154,8 @@ function NewFolderView:init()
 	}
 	characters[kRowMenu] = menuRow
 	
+	gfx.setDrawOffset(0, 0)
+	
 	gfx.clear(gfx.kColorWhite)
 	gfx.setColor(gfx.kColorBlack)
 	gfx.setLineWidth(2)
