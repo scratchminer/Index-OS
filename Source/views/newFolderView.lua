@@ -324,7 +324,7 @@ function NewFolderView.BButtonDown()
 		
 		gfx.setColor(gfx.kColorWhite)
 		gfx.fillRect(0, 0, 400, 70)
-		gfx.setFont(normlaFont)
+		gfx.setFont(normalFont)
 		gfx.drawTextAligned("📁 *New Folder Name:*\n" .. escapeText(currentText), 200, 24, kTextAlignment.center)
 	end)
 end

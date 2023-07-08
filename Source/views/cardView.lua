@@ -1517,7 +1517,7 @@ function CardView.downButtonUp()
 end
 
 function CardView.cranked(change, accelChange)
-	if math.abs(accelChange) < 2 or not allowVerticalMove or playdate.buttonIsPressed("left") or playdate.buttonIsPressed("right") then
+	if math.abs(change) < 2 or not allowVerticalMove or playdate.buttonIsPressed("left") or playdate.buttonIsPressed("right") then
 		local game = playdate.getCurrentGame()
 		if gameList[selectedIndex].state ~= nil and gameMove == nil then
 			local launcherPrefs = {selectedGamePath = game:getPath()}
@@ -1528,7 +1528,7 @@ function CardView.cranked(change, accelChange)
 		return
 	end
 	
-	crankAccum = crankAccum + accelChange * 2
+	crankAccum = crankAccum + accelChange
 	
 	if crankAccum > 120 then
 		if selectedIndex == #gameList and gameMove ~= nil and gameMove.index == nil and gameList[selectedIndex].state ~= nil then
@@ -2138,7 +2138,8 @@ end
 
 function playdate.getCurrentGame()
 	if gameList ~= nil and gameList[selectedIndex] ~= nil then
-		return gameList[selectedIndex].data
+		print(type(gameList[selectedIndex].data))
+		return type(gameList[selectedIndex].data) == "userdata" and gameList[selectedIndex].data or nil
 	end
 	
 	return nil
