@@ -2138,7 +2138,6 @@ end
 
 function playdate.getCurrentGame()
 	if gameList ~= nil and gameList[selectedIndex] ~= nil then
-		print(type(gameList[selectedIndex].data))
 		return type(gameList[selectedIndex].data) == "userdata" and gameList[selectedIndex].data or nil
 	end
 	
