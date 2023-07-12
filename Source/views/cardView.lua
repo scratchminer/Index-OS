@@ -180,7 +180,7 @@ local loadAll = function(dontReload)
 	if gameMove == nil or gameMove.index == nil then
 		if dontReload then
 			for i = 1, #gameList do
-				if gameList[i].loaded then
+				if gameList[i] ~= nil and gameList[i].loaded then
 					gameList[i]:destroySprite()
 				end
 			end
@@ -191,7 +191,7 @@ local loadAll = function(dontReload)
 			
 			for i = 1, lower - 1 do
 				if gameList[i] ~= nil and gameList[i].state ~= kGameStateUnwrapping then
-					if gameList[i].state ~= nil then
+					if gameList[i] ~= nil and gameList[i].state ~= nil then
 						gameList[i]:destroySprite()
 					end
 				end
@@ -199,7 +199,7 @@ local loadAll = function(dontReload)
 			
 			for i = upper + 1, #gameList do
 				if gameList[i] ~= nil and gameList[i].state ~= kGameStateUnwrapping then
-					if gameList[i].state ~= nil then
+					if gameList[i] ~= nil and gameList[i].state ~= nil then
 						gameList[i]:destroySprite()
 					end
 				end
@@ -656,7 +656,7 @@ function CardView.upButtonDown()
 		keyTimer = nil
 	end
 	
-	keyTimer = tmr.keyRepeatTimerWithDelay(300, 180, function()
+	keyTimer = tmr.keyRepeatTimerWithDelay(300, 40, function()
 		if not playdate.buttonIsPressed("up") or not allowVerticalMove or playdate.buttonIsPressed("left") or playdate.buttonIsPressed("right") then
 			return
 		end
@@ -669,12 +669,6 @@ function CardView.upButtonDown()
 		elseif playdate.getCurrentTimeMilliseconds() > 500 then
 			selectedIndex = selectedIndex - 1
 			snd.playSystemSound(snd.kSoundSelectPrevious)
-			
-			local game = playdate.getCurrentGame()
-			if gameList[selectedIndex] ~= nil and gameList[selectedIndex].state ~= nil and gameMove == nil then
-				local launcherPrefs = {selectedGamePath = game:getPath()}
-				dts.write(launcherPrefs, "launcherprefs", true)
-			end
 			
 			if inInfoView then
 				infoViewSprite:setImage(infoViewCard:copy())
@@ -745,7 +739,7 @@ function CardView.downButtonDown()
 		keyTimer = nil
 	end
 	
-	keyTimer = tmr.keyRepeatTimerWithDelay(300, 180, function()
+	keyTimer = tmr.keyRepeatTimerWithDelay(300, 40, function()
 		if not playdate.buttonIsPressed("down") or not allowVerticalMove or playdate.buttonIsPressed("left") or playdate.buttonIsPressed("right") then
 			return
 		end
@@ -768,12 +762,6 @@ function CardView.downButtonDown()
 		elseif playdate.getCurrentTimeMilliseconds() > 500 then
 			selectedIndex = selectedIndex + 1
 			snd.playSystemSound(snd.kSoundSelectNext)
-			
-			local game = playdate.getCurrentGame()
-			if gameList[selectedIndex] ~= nil and gameList[selectedIndex].state ~= nil and gameMove == nil then
-				local launcherPrefs = {selectedGamePath = game:getPath()}
-				dts.write(launcherPrefs, "launcherprefs", true)
-			end
 			
 			if inInfoView then
 				infoViewSprite:setImage(infoViewCard:copy())
@@ -1507,12 +1495,24 @@ function CardView.upButtonUp()
 		keyTimer:remove()
 		keyTimer = nil
 	end
+	
+	local game = playdate.getCurrentGame()
+	if gameList[selectedIndex] ~= nil and gameList[selectedIndex].state ~= nil and gameMove == nil then
+		local launcherPrefs = {selectedGamePath = game:getPath()}
+		dts.write(launcherPrefs, "launcherprefs", true)
+	end
 end
 
 function CardView.downButtonUp()
 	if keyTimer ~= nil then
 		keyTimer:remove()
 		keyTimer = nil
+	end
+	
+	local game = playdate.getCurrentGame()
+	if gameList[selectedIndex] ~= nil and gameList[selectedIndex].state ~= nil and gameMove == nil then
+		local launcherPrefs = {selectedGamePath = game:getPath()}
+		dts.write(launcherPrefs, "launcherprefs", true)
 	end
 end
 
