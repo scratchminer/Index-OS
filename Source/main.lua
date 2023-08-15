@@ -130,6 +130,11 @@ local refreshViewList = function(firstCall)
 			folderPrefs.selectedFolder = "System"
 		else
 			targetGroup, currentViewIndex = getGroupByName(selectedFolder)
+			if targetGroup == nil then
+				targetGroup, currentViewIndex = getGroupByName("System")
+				currentGame = "/System/Settings.pdx"
+				folderPrefs.selectedFolder = "System"
+			end
 		end
 	else
 		currentGame = currentGame or selectedGame

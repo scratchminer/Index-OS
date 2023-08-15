@@ -2,4 +2,4 @@ name=Index OS
 author=scratchminer & Rae
 description=A custom launcher for the Playdate.
 bundleID=com.panic.launcher
-version=1.1.5
+version=1.1.6
