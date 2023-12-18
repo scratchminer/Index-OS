@@ -557,12 +557,12 @@ function Game:enterIcon(frameNum)
 	end
 end
 
-function Game:getIcon()
+function Game:getIcon(static)
 	if self.id == "com.panic.launcher" then
 		return launcherIconImg
 	end
 	
-	if self.extraInfo.iconAnimation == nil and (self.state == nil or self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled) then
+	if static == true or self.extraInfo.iconAnimation == nil and (self.state == nil or self.data:getInstalledState() ~= self.data.kPDGameStateFreshlyInstalled) then
 		return self.extraInfo.iconStill
 	end
 	

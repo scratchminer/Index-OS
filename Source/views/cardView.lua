@@ -2090,9 +2090,9 @@ function CardView:draw(shake)
 		for i = boundLow, boundHigh do
 			if i >= 1 and i <= #gameList then
 				local yo = (i - selectedIndex) * 36
-			
+				
 				gfx.setDrawOffset(0, yo)
-				local icon = gameList[i]:getIcon()
+				local icon = gameList[i]:getIcon(i ~= selectedIndex)
 				
 				if i == selectedIndex and gameList[selectedIndex].state ~= nil then
 					gfx.setColor(gfx.kColorXOR)
