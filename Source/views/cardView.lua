@@ -1801,7 +1801,7 @@ function CardView:draw(shake)
 	end
 	
 	if cardImg ~= nil then
-		if gameList[selectedIndex].loaded then
+		if gameList[selectedIndex].data ~= nil then
 			if gameList[selectedIndex].data:getInstalledState() == gameList[selectedIndex].data.kPDGameStateFreshlyInstalled and gameList[selectedIndex]:shouldUnwrap() then
 				gameList[selectedIndex].data:setInstalledState(gameList[selectedIndex].data.kPDGameStateInstalled)
 				sys.clearLastGameDownloadPath()
