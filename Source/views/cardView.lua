@@ -1349,8 +1349,7 @@ function CardView.AButtonUp()
 					
 					local yPos = 14
 					for i = 1, #gameList do
-						local text = gameList[i].data and gameList[i]:getListedTitle():gsub("*", "**"):gsub("_", "__") or "Loading..."
-						text = gameList[i].state and text or gameList[i]:getTitle()
+						local text = gameList[i].state and gameList[i]:getListedTitle():gsub("*", "**"):gsub("_", "__") or gameList[i]:getTitle()
 						
 						gfx.drawTextInRect("*" .. text .. "*", 24, yPos, 300, 24, nil, "...", kTextAlignment.left)
 						yPos = yPos + 36
@@ -1748,7 +1747,7 @@ function CardView:draw(shake)
 	end
 	
 	local cardImg, unlocked
-	if gameList[selectedIndex] == nil then
+	if gameList[selectedIndex] == nil or not gameList[selectedIndex].loaded then
 		cardImg, unlocked = nil, true
 	elseif gameMove == nil and not inListView then
 		cardImg, unlocked = gameList[selectedIndex]:getCardImage(first)
@@ -1802,7 +1801,7 @@ function CardView:draw(shake)
 	end
 	
 	if cardImg ~= nil then
-		if gameList[selectedIndex].data then
+		if gameList[selectedIndex].loaded then
 			if gameList[selectedIndex].data:getInstalledState() == gameList[selectedIndex].data.kPDGameStateFreshlyInstalled and gameList[selectedIndex]:shouldUnwrap() then
 				gameList[selectedIndex].data:setInstalledState(gameList[selectedIndex].data.kPDGameStateInstalled)
 				sys.clearLastGameDownloadPath()
@@ -1894,10 +1893,6 @@ function CardView:draw(shake)
 		end
 	end
 	
-	if gameList[selectedIndex].id == "com.panic.launcher" then
-		gameList[selectedIndex]:getCardImage()
-	end
-	
 	local offX = 0
 	
 	if gameMove ~= nil and folderName ~= "System" then
@@ -1971,7 +1966,7 @@ function CardView:draw(shake)
 	local barYOffset = nil
 	
 	local frameNum, numFrames
-	if gameList[selectedIndex] ~= nil then
+	if gameList[selectedIndex] ~= nil and gameList[selectedIndex].loaded then
 		frameNum, numFrames = gameList[selectedIndex]:getLaunchParams()
 	end
 	
@@ -1993,7 +1988,7 @@ function CardView:draw(shake)
 		barYOffset = -84
 	end
 	
-	if not inListView and not inInfoView and barAnim == nil and gameList[selectedIndex].state ~= kGameStateLaunching then
+	if not inListView and not inInfoView and barAnim == nil and gameList[selectedIndex] ~= nil and gameList[selectedIndex].state ~= kGameStateLaunching then
 		barYOffset = 0
 	end
 	
