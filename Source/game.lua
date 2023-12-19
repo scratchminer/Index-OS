@@ -276,7 +276,7 @@ function Game:init(game)
 			local _, image
 			
 			if self.extraInfo.imagePath ~= nil and useDefault then
-				_, image = loadCardImage(self, "", false)
+				_, image = loadCardImage(self, self.extraInfo.imagePath, false)
 			else
 				_, image = loadCardImage(self, "card", useDefault)
 			end
