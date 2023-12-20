@@ -343,10 +343,10 @@ local makeTopBar = function()
 			gfx.popContext()
 			
 			self:setImage(image)
-		end
-		
-		if gameList[selectedIndex].state ~= kGameStateLaunching then
-			refreshPageSprites(self.y)
+			
+			if gameList[selectedIndex].state ~= kGameStateLaunching then
+				refreshPageSprites(self.y)
+			end
 		end
 		
 		if listViewTimer ~= nil or inListView then
