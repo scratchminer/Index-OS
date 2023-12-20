@@ -162,6 +162,7 @@ local shakeBackForth = 0
 local prevOffY
 local offY
 local offYAnim
+local offX = 0
 local offXAnim
 
 local launchAnim
@@ -170,6 +171,7 @@ local lastLaunchAnimVal
 
 barAnim = nil
 local prevBarOffset
+local dotsAnimLatch
 local forceRefresh
 
 local secretComboIndex = 1
@@ -181,7 +183,7 @@ local loadAll = function(dontReload)
 		if dontReload then
 			for i = 1, #gameList do
 				if gameList[i] ~= nil and gameList[i].loaded then
-					gameList[i]:destroySprite()
+					gameList[i]:unloadCardImages()
 				end
 			end
 		else
@@ -192,7 +194,7 @@ local loadAll = function(dontReload)
 			for i = 1, lower - 1 do
 				if gameList[i] ~= nil and gameList[i].state ~= kGameStateUnwrapping then
 					if gameList[i] ~= nil and gameList[i].state ~= nil then
-						gameList[i]:destroySprite()
+						gameList[i]:unloadCardImages()
 					end
 				end
 			end
@@ -200,7 +202,7 @@ local loadAll = function(dontReload)
 			for i = upper + 1, #gameList do
 				if gameList[i] ~= nil and gameList[i].state ~= kGameStateUnwrapping then
 					if gameList[i] ~= nil and gameList[i].state ~= nil then
-						gameList[i]:destroySprite()
+						gameList[i]:unloadCardImages()
 					end
 				end
 			end
@@ -209,7 +211,7 @@ local loadAll = function(dontReload)
 		if dontReload then
 			for i = 1, #gameList do
 				if type(gameList[i]) == "table" then
-					gameList[i]:destroySprite()
+					gameList[i]:unloadCardImages()
 				end
 			end
 		else
@@ -229,7 +231,7 @@ local loadAll = function(dontReload)
 			
 			for i = 1, #gameList do
 				if i ~= scrnIndex and i ~= scrnIndex2 and type(gameList[i]) == "table" then
-					gameList[i]:destroySprite()
+					gameList[i]:unloadCardImages()
 				end
 			end
 		end
@@ -305,7 +307,7 @@ local makeTopBar = function()
 	topBarSprite:setIgnoresDrawOffset(true)
 	
 	function topBarSprite:update()
-		local doUpdate = offX ~= 0
+		local doUpdate = offX ~= 0 or not dotsAnimLatch
 		
 		local now = getPrintableTime()
 		if lastTime ~= now then
@@ -314,6 +316,12 @@ local makeTopBar = function()
 		end
 		
 		local pct = playdate.getBatteryPercentage()
+		if pct < 50 or pct > 100 then
+			pct = math.floor(pct)
+		else
+			pct = math.ceil(pct)
+		end
+		
 		if lastPercentage ~= pct then
 			lastPercentage = pct
 			doUpdate = true
@@ -325,19 +333,13 @@ local makeTopBar = function()
 			gfx.pushContext(image)
 			gfx.setFont(normalFont)
 			gfx.setImageDrawMode(gfx.kDrawModeNXOR)
-		
+			
 			gfx.drawText(lastTime, 16, 2)
 			gfx.drawTextAligned("◂ " .. displayName .. " ▸", 200, 2, kTextAlignment.center)
 		
 			local pwr = playdate.getPowerStatus()
 		
 			if prefs.showBatteryPercentage or pwr.charging or pwr.USB or pwr.screws or pct < prefs.showBatteryBelowThreshold then
-				if pct < 50 or pct > 100 then
-					pct = math.floor(pct)
-				else
-					pct = math.ceil(pct)
-				end
-			
 				gfx.drawTextAligned(string.format("%d%%", pct), 342, 2, kTextAlignment.right)
 			end
 			gfx.popContext()
@@ -346,6 +348,10 @@ local makeTopBar = function()
 			
 			if gameList[selectedIndex].state ~= kGameStateLaunching then
 				refreshPageSprites(self.y)
+			end
+			
+			if not dotsAnimLatch and barAnim == nil then
+				dotsAnimLatch = true
 			end
 		end
 		
@@ -629,6 +635,7 @@ function CardView:activate(swipeInFrom, currentGame)
 		gfx.popContext()
 	end
 	
+	dotsAnimLatch = false
 	allowMoving = true
 	allowVerticalMove = true
 	onNextFrame = true
@@ -907,6 +914,7 @@ function CardView.BButtonUp()
 		listViewSprite:setAnimator(listViewAnim)
 		
 		barAnim = tmr.new(300, -84, 0)
+		dotsAnimLatch = false
 		inListView = false
 		
 		if not listCloseSound:isPlaying() then
@@ -937,6 +945,7 @@ function CardView.BButtonUp()
 		bottomBarSprite:setAnimator(infoViewAnim)
 		
 		barAnim = tmr.new(300, -84, 0)
+		dotsAnimLatch = false
 		
 		batterySprite:add()
 		
@@ -990,6 +999,7 @@ function CardView.BButtonUp()
 		gfx.popContext()
 		
 		barAnim = tmr.new(300, 0, -84)
+		dotsAnimLatch = false
 		inInfoView = true
 		
 		if not infoOpenSound:isPlaying() then
@@ -1055,6 +1065,7 @@ function CardView.AButtonUp()
 		bottomBarSprite:setAnimator(infoViewAnim)
 		
 		barAnim = tmr.new(300, -84, 0)
+		dotsAnimLatch = false
 		
 		batterySprite:add()
 		
@@ -1135,6 +1146,7 @@ function CardView.AButtonUp()
 			listViewTextSprite.refresh = true
 			
 			barAnim = tmr.new(300, barAnim and barAnim.value or 0, -84)
+			dotsAnimLatch = false
 			inListView = true
 			
 			if not listOpenSound:isPlaying() then
@@ -1184,6 +1196,7 @@ function CardView.AButtonUp()
 		listViewSprite:setAnimator(listViewAnim)
 		
 		barAnim = tmr.new(300, barAnim and barAnim.value or -84, 0)
+		dotsAnimLatch = false
 		inListView = false
 		
 		if not listCloseSound:isPlaying() then
@@ -1223,6 +1236,7 @@ function CardView.AButtonUp()
 				elseif gameList[selectedIndex].cardSprite ~= nil then
 					gameList[selectedIndex].cardSprite:setZIndex(32767)
 					barAnim = tmr.new(300, barYOffset, -84)
+					dotsAnimLatch = false
 					willLaunchGame()
 					gameList[selectedIndex]:queueLaunch()
 				end
@@ -1246,6 +1260,7 @@ function CardView.AButtonUp()
 		
 		topBarSprite:removeAnimator()
 		barAnim = tmr.new(300, -84, 0)
+		dotsAnimLatch = false
 		batterySprite:add()
 		
 		infoViewTimer = tmr.new(200, function()
@@ -1276,6 +1291,7 @@ function CardView.AButtonUp()
 				elseif gameList[selectedIndex].cardSprite ~= nil then
 					gameList[selectedIndex].cardSprite:setZIndex(32767)
 					barAnim = tmr.new(300, barYOffset, -84)
+					dotsAnimLatch = false
 					willLaunchGame()
 					gameList[selectedIndex]:queueLaunch()
 				end
@@ -1293,6 +1309,7 @@ function CardView.AButtonUp()
 		elseif gameList[selectedIndex].state ~= nil and gameList[selectedIndex].cardSprite ~= nil then
 			gameList[selectedIndex].cardSprite:setZIndex(32767)
 			barAnim = tmr.new(300, barYOffset, -84)
+			dotsAnimLatch = false
 			willLaunchGame()
 			gameList[selectedIndex]:queueLaunch()
 			allowMoving = false
@@ -1372,6 +1389,7 @@ function CardView.AButtonUp()
 			listViewTextSprite.refresh = true
 			
 			barAnim = tmr.new(300, barAnim and barAnim.value or 0, -84)
+			dotsAnimLatch = false
 			inListView = true
 			
 			if not listOpenSound:isPlaying() then
@@ -1415,6 +1433,7 @@ function CardView.AButtonUp()
 			listViewSprite:setAnimator(listViewAnim)
 			
 			barAnim = tmr.new(300, barAnim and barAnim.value or -84, 0)
+			dotsAnimLatch = false
 			inListView = false
 			
 			if not listCloseSound:isPlaying() then
@@ -1893,7 +1912,7 @@ function CardView:draw(shake)
 		end
 	end
 	
-	local offX = 0
+	offX = 0
 	
 	if gameMove ~= nil and folderName ~= "System" then
 		offY = (selectedIndex - 1.5) * 200
@@ -2024,7 +2043,7 @@ function CardView:draw(shake)
 	
 	if inListView or listViewAnim ~= nil and not listViewAnim:ended() then
 		local lower = 16
-		local offX = 368
+		offX = 368
 		
 		if offXAnim ~= nil then
 			offX = offXAnim.value * 0.92

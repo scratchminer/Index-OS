@@ -466,7 +466,6 @@ if sys == nil then
 else
 	sys.setLaunchAnimationActive(false)
 	dis.setRefreshRate(40)
-	playdate.setMinimumGCTime(4)
 	
 	prefs = dts.read("/Data/Index OS/prefs") or {}
 	folderPrefs = dts.read("Index OS/folderSettings") or {}

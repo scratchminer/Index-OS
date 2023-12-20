@@ -68,8 +68,8 @@ local patternMaskImg = img.new("images/wrappedMask")
 
 local defaultLaunchSound = flp.new("systemsfx/03-action-trimmed")
 
-cardImagePool = table.create(50, 0)
-iconImagePool = table.create(50, 0)
+cardImagePool = {}
+iconImagePool = {}
 
 local endsWith = function(str, ending)
 	return "" == ending or string.sub(str, -string.len(ending)) == ending
