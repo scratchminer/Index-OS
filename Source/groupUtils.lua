@@ -82,7 +82,7 @@ function loadGroupFaster(groupIndex, index)
 			local game = gameGroups[groupIndex][i]
 			
 			if type(game) == "userdata" then
-				gameGroups[groupIndex][i] = Game(game)
+				gameGroups[groupIndex][i] = Game(game, true)
 			end
 		end
 	end

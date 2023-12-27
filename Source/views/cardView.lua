@@ -176,8 +176,6 @@ local forceRefresh
 
 local secretComboIndex = 1
 
-local emptyImage = img.new(350, 155, gfx.kColorClear)
-
 local loadAll = function(dontReload)
 	if gameMove == nil or gameMove.index == nil then
 		if dontReload then
@@ -243,8 +241,8 @@ local loadAll = function(dontReload)
 			local upper = math.ceil(offY / 200) + 1
 			
 			for i = lower - 1, upper + 1 do
-				if gameList[i] ~= nil and not gameList[i].loadCardImages then
-					gameList[i] = Game(gameList[i])
+				if gameList[i] ~= nil and gameList[i].state == nil then
+					gameList[i] = Game(gameList[i], true)
 				end
 				
 				if gameList[i] ~= nil and not gameList[i].loaded then
@@ -271,8 +269,8 @@ local loadAll = function(dontReload)
 				scrnIndex2 = selectedIndex + 1
 			end
 			
-			if gameList[scrnIndex] ~= nil and not gameList[scrnIndex].loadCardImages then
-				gameList[scrnIndex] = Game(gameList[scrnIndex])
+			if gameList[scrnIndex] ~= nil and gameList[scrnIndex].state == nil then
+				gameList[scrnIndex] = Game(gameList[scrnIndex], true)
 			end
 			
 			if gameList[scrnIndex] ~= nil and not gameList[scrnIndex].loaded then
@@ -281,8 +279,8 @@ local loadAll = function(dontReload)
 				gameList[scrnIndex].cardSprite:moveBy(0, (selectedIndex - 2) * 200)
 			end
 			
-			if gameList[scrnIndex2] ~= nil and not gameList[scrnIndex2].loadCardImages then
-				gameList[scrnIndex2] = Game(gameList[scrnIndex2])
+			if gameList[scrnIndex2] ~= nil and gameList[scrnIndex2].state == nil then
+				gameList[scrnIndex2] = Game(gameList[scrnIndex2], true)
 			end
 			
 			if gameList[scrnIndex2] ~= nil and not gameList[scrnIndex2].loaded then
@@ -536,10 +534,6 @@ function CardView:useGroup(groupStr, currentGame)
 		end
 	end
 	
-	if #group == 0 then
-		table.insert(group, Game())
-	end
-	
 	if selectedIndex == nil then
 		selectedIndex = 1
 	end
@@ -547,6 +541,10 @@ function CardView:useGroup(groupStr, currentGame)
 	
 	if loadFaster then
 		group = loadGroupFaster(idx, selectedIndex)
+	end
+	
+	if #group == 0 then
+		table.insert(group, Game())
 	end
 	
 	self.gameList = group

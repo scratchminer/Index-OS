@@ -513,7 +513,6 @@ else
 	unselectedImage = img.new("images/viewUnselected")
 	
 	refreshViewList(true)
-	loadNextGame()
 	
 	flipForward = snd.sampleplayer.new("sounds/flipForward")
 	flipBack = snd.sampleplayer.new("sounds/flipBack")

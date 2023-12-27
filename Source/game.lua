@@ -237,14 +237,25 @@ end
 
 class("Game").extends()
 
-function Game:init(game)
+function Game:init(game, fast)
 	if unwrapVideo == nil then
 		loadPresentAnims()
 	end
 	
 	self.extraInfo = {}
 	
-	if game ~= nil then
+	if type(game) == "userdata" then
+		local t1 = playdate.getCurrentTimeMilliseconds()
+		local t2
+		
+		local checkTime = function()
+			t2 = playdate.getCurrentTimeMilliseconds()
+			if not fast and t2 - t1 > 25 then
+				coroutine.yield()
+				t1 = playdate.getCurrentTimeMilliseconds()
+			end
+		end
+		
 		self.data = game
 		
 		self.state = kGameStateIdle
@@ -270,6 +281,7 @@ function Game:init(game)
 			return
 		end
 		
+		checkTime()
 		local useDefault = self.extraInfo.imagePath == nil or not fle.isdir(self.extraInfo.imagePath)
 		
 		if self.extraInfo.cardStill == nil then
@@ -284,6 +296,7 @@ function Game:init(game)
 			self.extraInfo.cardStill = image
 		end
 		
+		checkTime()
 		self:createSprite()
 		
 		self.extraInfo.animated = fle.exists((self.extraInfo.imagePath or self.path) .. "/card-highlighted/")
@@ -297,6 +310,8 @@ function Game:init(game)
 				if animFile ~= nil then
 					animFile:close()
 				end
+				
+				checkTime()
 			end
 			
 			if self.extraInfo.cardAnimation.frames == nil then
@@ -306,6 +321,7 @@ function Game:init(game)
 				end
 				
 				local files = fle.listFiles(animImage .. "/card-highlighted/")
+				checkTime()
 				
 				for i, file in ipairs(files) do
 					table.insert(self.extraInfo.cardImage, "card-highlighted/" .. tostring(i) .. ".pdi")
@@ -332,6 +348,8 @@ function Game:init(game)
 				
 				self:enterFrame(self.extraInfo.cardAnimation.frames[1])
 			end
+			
+			checkTime()
 		else
 			self.extraInfo.cardImage = self.extraInfo.cardStill
 		end
@@ -339,6 +357,7 @@ function Game:init(game)
 		local _, icon = loadIcon(self, "icon", useDefault)
 		self.extraInfo.iconStill = icon
 		
+		checkTime()
 		if fle.exists((self.extraInfo.imagePath or self.path) .. "/icon-highlighted/") then
 			self.extraInfo.iconImage = {}
 			
@@ -353,6 +372,7 @@ function Game:init(game)
 				if animFile ~= nil then
 					animFile:close()
 				end
+				checkTime()
 			end
 			
 			if self.extraInfo.iconAnimation.frames == nil then
@@ -362,6 +382,7 @@ function Game:init(game)
 				end
 				
 				local files = fle.listFiles(animImage .. "/icon-highlighted/")
+				checkTime()
 				
 				for i, file in ipairs(files) do
 					table.insert(self.extraInfo.iconImage, "icon-highlighted/" .. tostring(i) .. ".pdi")
@@ -388,6 +409,8 @@ function Game:init(game)
 				
 				self:enterIcon(self.extraInfo.iconAnimation.frames[1])
 			end
+			
+			checkTime()
 		elseif fle.exists("images/icons/season1/" .. self.id .. ".pdi") then
 			self.extraInfo.iconStill = img.new("images/icons/season1/" .. self.id)
 			self.extraInfo.iconImage = self.extraInfo.iconStill
@@ -397,7 +420,7 @@ function Game:init(game)
 		
 		self.frameIndex = 0
 		self.loopCount = 0
-	else
+	elseif game == nil then
 		self.extraInfo.cardStill = emptyFolderImg
 		self.extraInfo.iconStill = emptyFolderIconImg
 		self:createSprite()
