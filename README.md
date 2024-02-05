@@ -1,7 +1,7 @@
 ![Index OS logo](logo.svg)
 ## A custom launcher for the Panic Playdate.
 
-By [scratchminer](https://github.com/scratchminer) and [Rae](https://stuffbyrae.neocities.org/)
+By [scratchminer](https://github.com/scratchminer) and [Rae](https://rae.wtf/)
 
 ### Building from source
 Use the Playdate Compiler from Playdate's SDK: `pdc Source IndexOS.pdx`
