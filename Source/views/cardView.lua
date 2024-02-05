@@ -571,7 +571,7 @@ function CardView:activate(swipeInFrom, currentGame)
 		offXAnim = tmr.new(80, -400, 0, playdate.easingFunctions.outCubic)
 	end
 	
-	if gameList[selectedIndex].state ~= nil then
+	if gameList[selectedIndex] ~= nil and gameList[selectedIndex].state ~= nil then
 		gameList[selectedIndex]:queueIdle()
 	end
 	
