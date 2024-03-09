@@ -39,15 +39,20 @@ local getViewArg = function(groupName)
 end
 
 local loadGroupAsync = function(index)
-	-- go through each group twice, in case we miss a game
-	for j, game in ipairs(gameGroups[index]) do
-		if type(game) == "userdata" then
-			coroutine.yield(j, Game(game))
-		end
-	end
-	for j, game in ipairs(gameGroups[index]) do
-		if type(game) == "userdata" then
-			coroutine.yield(j, Game(game))
+	j = 0
+	paths = {}
+	
+	for i, game in ipairs(gameGroups[index]) do
+		if type(game) == "table" then
+			j = j + 1
+		elseif type(game) == "userdata" then
+			local addGame = table.indexOfElement(paths, game:getPath()) == nil
+			
+			if addGame then
+				j = j + 1
+				table.insert(paths, game:getPath())
+				coroutine.yield(j, Game(game))
+			end
 		end
 	end
 end

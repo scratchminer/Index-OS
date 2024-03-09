@@ -1152,7 +1152,9 @@ function CardView.AButtonUp()
 			end
 			
 			for _, game in ipairs(gameList) do
-				game:queueIdle()
+				if game.queueIdle then
+					game:queueIdle()
+				end
 			end
 			
 			listViewTimer = tmr.new(300, function()
@@ -1754,7 +1756,6 @@ function CardView:draw(shake)
 	end
 	
 	if onNextFrame == true and first == false then
-		loadAll(true)
 		loadAll(false)
 		prevIndex = selectedIndex
 		onNextFrame = false
@@ -2104,7 +2105,7 @@ function CardView:draw(shake)
 				local yo = (i - selectedIndex) * 36
 				
 				gfx.setDrawOffset(0, yo)
-				local icon = gameList[i]:getIcon(i ~= selectedIndex)
+				local icon = gameList[i].getIcon and gameList[i]:getIcon(i ~= selectedIndex)
 				
 				if i == selectedIndex and gameList[selectedIndex].state ~= nil then
 					gfx.setColor(gfx.kColorXOR)

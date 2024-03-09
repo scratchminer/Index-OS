@@ -1063,13 +1063,10 @@ function Game:enterFrame(frameNum)
 	
 	local w, h = image:getSize()
 	if (w ~= 350 or h ~= 155) and self.id ~= "com.panic.launcher" then
-		local mask = image:getMaskImage() or img.new(400, 240, gfx.kColorWhite)
+		local mask = image:getMaskImage() or img.new(w, h, gfx.kColorBlack)
 		gfx.pushContext(mask)
-		gfx.setColor(gfx.kColorBlack)
-		gfx.fillRect(0, 0, 24, 240)
-		gfx.fillRect(375, 0, 24, 240)
-		gfx.fillRect(24, 0, 42, 350)
-		gfx.fillRect(24, 197, 42, 350)
+		gfx.setColor(gfx.kColorWhite)
+		gfx.fillRect((w - 350) / 2, (h - 155) / 2, 350, 155)
 		gfx.popContext()
 		image:setMaskImage(mask)
 	end
