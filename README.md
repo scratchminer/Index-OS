@@ -7,17 +7,19 @@ By [scratchminer](https://github.com/scratchminer) and [Rae](https://rae.wtf/)
 Use the Playdate Compiler from Playdate's SDK: `pdc Source IndexOS.pdx`
 
 ### Installing
-#### On hardware
-1. Download the Index Installer from the website or releases page.
-2. Sideload the PDX to your device, or place it directly in the data disk somewhere in the `Games` folder.
-3. On your Playdate, launch the installer and follow the on-screen prompts.
 
 #### On the Playdate Simulator
-1. Build the Index OS core application yourself, or download it from the website or releases page.
+1. Build the Index OS core application yourself, or download it from the releases page.
 2. Navigate to wherever you installed the Playdate SDK, then go to `<SDK path>/Disk/System`.
 3. Rename the existing application `Launcher.pdx` to somthing else, like `StockLauncher.pdx`.
 4. Drag Index OS into the `System` folder and rename it `Launcher.pdx`.
 5. Launch Index OS with the Playdate Simulator.
+
+#### On hardware
+1. Download the Index OS core from the releases page.
+2. Follow the instructions [here](https://github.com/RintaDev5792/FunnyLoader) up to step 7.
+3. Place Index OS into FunnyLoader's `Launchers` folder, then continue with the installation.
+4. You should now be able to launch Index OS with FunnyLoader.
 
 ---
 
